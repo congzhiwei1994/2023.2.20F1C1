@@ -48,7 +48,7 @@ using Object = UnityEngine.Object;
         
         private ResolutionMulltiplier m_OldRes;
         //模糊shader
-        const string k_BlurShader = "czw/Post-Processing/KawaseBlur";
+        const string k_BlurShader = "Hidden/KawaseBlur";
         private Material _blurMaterial;
 
         private void Awake()
@@ -57,6 +57,7 @@ using Object = UnityEngine.Object;
         }
         private void OnEnable()
         {
+            
             RenderPipelineManager.beginCameraRendering += ExecuteBeforeCameraRender;
         }
 
@@ -257,6 +258,7 @@ using Object = UnityEngine.Object;
                 if (blurShader == null)
                 {
                     Debug.LogError("Reflection Not Find Blur Shader");
+                    return;
                 }
                 _blurMaterial = CoreUtils.CreateEngineMaterial(blurShader);
             }
