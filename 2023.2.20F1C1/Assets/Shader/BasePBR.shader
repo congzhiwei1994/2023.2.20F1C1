@@ -32,10 +32,23 @@ Shader "Demo/BasePBR"
             #pragma fragment frag
             #pragma multi_compile_fog
 
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ EVALUATE_SH_MIXED EVALUATE_SH_VERTEX
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
+            #pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
+            #pragma multi_compile _ _LIGHT_LAYERS
+            #pragma multi_compile _ _FORWARD_PLUS
+
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-
+            #include "Includes/Fn_Lighting.hlsl"
             #define _NORMALMAP
 
             struct Attributes
@@ -132,13 +145,38 @@ Shader "Demo/BasePBR"
                 float3 diffuseColor = lerp(baseColor, 0, metallic);
                 float3 specularColor = lerp(float3(0.4, 0.4, 0.4), baseColor, metallic);
 
-                Light mainLight = GetMainLight(shadowCoord, i.positionWS, 1);
-                float NoL = dot(normalWS, mainLight.direction);
-                float3 diffuse = NoL * mainLight.color * mainLight.shadowAttenuation * mainLight.distanceAttenuation;
 
-                half4 c;
+                Light light = GetMainLight(shadowCoord, i.positionWS, 1);
+                
+                float3 directLighting = SimpleShading(diffuseColor, specularColor, roughness, light, viewWS, normalWS);
+                directLighting = PBRLighting_UE4(roughness, diffuseColor, specularColor, viewWS, normalWS, light);
 
-                return 1;
+                float3 c = directLighting;
+
+                #if defined(_ADDITIONAL_LIGHTS)
+    uint pixelLightCount = GetAdditionalLightsCount();
+
+                #if USE_FORWARD_PLUS
+    for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
+    {
+        FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
+
+        Light light = GetAdditionalLight(lightIndex, i.positionWS);
+        {
+             c += PBRLighting_UE4(roughness, diffuseColor, specularColor, viewWS, normalWS, light);
+        }
+    }
+                #endif
+
+    LIGHT_LOOP_BEGIN(pixelLightCount)
+         Light light = GetAdditionalLight(lightIndex, i.positionWS);
+        {
+              c += PBRLighting_UE4(roughness, diffuseColor, specularColor, viewWS, normalWS, light);
+        }
+    LIGHT_LOOP_END
+                #endif
+
+                return float4(c, 1);
             }
             ENDHLSL
         }
