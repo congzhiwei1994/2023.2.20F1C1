@@ -12805,6 +12805,274 @@
 		}
 	],
 	"Morphs" : [
+		{
+			"Name" : "Mabel8_browDownLeft",
+			"Label" : "Mabel8_browDownLeft"
+		},
+		{
+			"Name" : "Mabel8_browDownRight",
+			"Label" : "Mabel8_browDownRight"
+		},
+		{
+			"Name" : "Mabel8_eyeSquintLeft",
+			"Label" : "Mabel8_eyeSquintLeft"
+		},
+		{
+			"Name" : "Mabel8_eyeSquintRight",
+			"Label" : "Mabel8_eyeSquintRight"
+		},
+		{
+			"Name" : "Mabel8_eyeWideLeft",
+			"Label" : "Mabel8_eyeWideLeft"
+		},
+		{
+			"Name" : "Mabel8_eyeWideRight",
+			"Label" : "Mabel8_eyeWideRight"
+		},
+		{
+			"Name" : "browDownEyeSquintLeft",
+			"Label" : "browDownEyeSquintLeft"
+		},
+		{
+			"Name" : "browDownEyeSquintRight",
+			"Label" : "browDownEyeSquintRight"
+		},
+		{
+			"Name" : "browDownLeft",
+			"Label" : "Brow Down Left"
+		},
+		{
+			"Name" : "browDownRight",
+			"Label" : "Brow Down Right"
+		},
+		{
+			"Name" : "browInnerUp",
+			"Label" : "Brow Inner Up"
+		},
+		{
+			"Name" : "browInnerUpWrinkles",
+			"Label" : "Brow Inner Up Wrinkles"
+		},
+		{
+			"Name" : "browOuterUpLeft",
+			"Label" : "Brow Outer Up Left"
+		},
+		{
+			"Name" : "browOuterUpLeftWrinkles",
+			"Label" : "Brow Outer Up Left Wrinkles"
+		},
+		{
+			"Name" : "browOuterUpRight",
+			"Label" : "Brow Outer Up Right"
+		},
+		{
+			"Name" : "browOuterUpRightWrinkles",
+			"Label" : "Brow Outer Up Right Wrinkles"
+		},
+		{
+			"Name" : "cheekPuff",
+			"Label" : "Cheek Puff"
+		},
+		{
+			"Name" : "cheekSquintLeft",
+			"Label" : "Cheek Squint Left"
+		},
+		{
+			"Name" : "cheekSquintRight",
+			"Label" : "Cheek Squint Right"
+		},
+		{
+			"Name" : "eyeBlinkLeft",
+			"Label" : "Eye Blink Left"
+		},
+		{
+			"Name" : "eyeBlinkRight",
+			"Label" : "Eye Blink Right"
+		},
+		{
+			"Name" : "eyeLookDownLeft",
+			"Label" : "Eye Look Down Left"
+		},
+		{
+			"Name" : "eyeLookDownRight",
+			"Label" : "Eye Look Down Right"
+		},
+		{
+			"Name" : "eyeLookInLeft",
+			"Label" : "Eye Look In Left"
+		},
+		{
+			"Name" : "eyeLookInRight",
+			"Label" : "Eye Look In Right"
+		},
+		{
+			"Name" : "eyeLookOutLeft",
+			"Label" : "Eye Look Out Left"
+		},
+		{
+			"Name" : "eyeLookOutRight",
+			"Label" : "Eye Look Out Right"
+		},
+		{
+			"Name" : "eyeLookUpLeft",
+			"Label" : "Eye Look Up Left"
+		},
+		{
+			"Name" : "eyeLookUpRight",
+			"Label" : "Eye Look Up Right"
+		},
+		{
+			"Name" : "eyeSquintBlinkLeft",
+			"Label" : "eyeSquintBlinkLeft"
+		},
+		{
+			"Name" : "eyeSquintBlinkRight",
+			"Label" : "eyeSquintBlinkRight"
+		},
+		{
+			"Name" : "eyeSquintEyeWideLeft",
+			"Label" : "eyeSquintEyeWideLeft"
+		},
+		{
+			"Name" : "eyeSquintEyeWideRight",
+			"Label" : "eyeSquintEyeWideRight"
+		},
+		{
+			"Name" : "eyeSquintLeft",
+			"Label" : "Eye Squint Left"
+		},
+		{
+			"Name" : "eyeSquintRight",
+			"Label" : "Eye Squint Right"
+		},
+		{
+			"Name" : "eyeWideLeft",
+			"Label" : "Eye Wide Left"
+		},
+		{
+			"Name" : "eyeWideRight",
+			"Label" : "Eye Wide Right"
+		},
+		{
+			"Name" : "jawForward",
+			"Label" : "Jaw Forward"
+		},
+		{
+			"Name" : "jawLeft",
+			"Label" : "Jaw Left"
+		},
+		{
+			"Name" : "jawOpen",
+			"Label" : "Jaw Open"
+		},
+		{
+			"Name" : "jawRight",
+			"Label" : "Jaw Right"
+		},
+		{
+			"Name" : "mouthClose",
+			"Label" : "Mouth Close"
+		},
+		{
+			"Name" : "mouthDimpleLeft",
+			"Label" : "Mouth Dimple Left"
+		},
+		{
+			"Name" : "mouthDimpleRight",
+			"Label" : "Mouth Dimple Right"
+		},
+		{
+			"Name" : "mouthFrownLeft",
+			"Label" : "Mouth Frown Left"
+		},
+		{
+			"Name" : "mouthFrownRight",
+			"Label" : "Mouth Frown Right"
+		},
+		{
+			"Name" : "mouthFunnel",
+			"Label" : "Mouth Funnel"
+		},
+		{
+			"Name" : "mouthLeft",
+			"Label" : "Mouth Left"
+		},
+		{
+			"Name" : "mouthLowerDownLeft",
+			"Label" : "Mouth Lower Down Left"
+		},
+		{
+			"Name" : "mouthLowerDownRight",
+			"Label" : "Mouth Lower Down Right"
+		},
+		{
+			"Name" : "mouthPressLeft",
+			"Label" : "Mouth Press Left"
+		},
+		{
+			"Name" : "mouthPressRight",
+			"Label" : "Mouth Press Right"
+		},
+		{
+			"Name" : "mouthPucker",
+			"Label" : "Mouth Pucker"
+		},
+		{
+			"Name" : "mouthRight",
+			"Label" : "Mouth Right"
+		},
+		{
+			"Name" : "mouthRollLower",
+			"Label" : "Mouth Roll Lower"
+		},
+		{
+			"Name" : "mouthRollUpper",
+			"Label" : "Mouth Roll Upper"
+		},
+		{
+			"Name" : "mouthShrugLower",
+			"Label" : "Mouth Shrug Lower"
+		},
+		{
+			"Name" : "mouthShrugUpper",
+			"Label" : "Mouth Shrug Upper"
+		},
+		{
+			"Name" : "mouthSmileLeft",
+			"Label" : "Mouth Smile Left"
+		},
+		{
+			"Name" : "mouthSmileRight",
+			"Label" : "Mouth Smile Right"
+		},
+		{
+			"Name" : "mouthStretchLeft",
+			"Label" : "Mouth Stretch Left"
+		},
+		{
+			"Name" : "mouthStretchRight",
+			"Label" : "Mouth Stretch Right"
+		},
+		{
+			"Name" : "mouthUpperUpLeft",
+			"Label" : "Mouth Upper Up Left"
+		},
+		{
+			"Name" : "mouthUpperUpRight",
+			"Label" : "Mouth Upper Up Right"
+		},
+		{
+			"Name" : "noseSneerLeft",
+			"Label" : "Nose Sneer Left"
+		},
+		{
+			"Name" : "noseSneerRight",
+			"Label" : "Nose Sneer Right"
+		},
+		{
+			"Name" : "tongueOut",
+			"Label" : "Tongue Out"
+		}
 	],
 	"Subdivisions" : [
 		{
