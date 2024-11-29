@@ -3,7 +3,7 @@ Shader "Demo/Skin"
     Properties
     {
         _BaseColor("Base Color",color) = (1,1,1,1)
-        _BaseMap("BaseMap", 2D) = "white" {}
+        _DiffuseMap("BaseMap", 2D) = "white" {}
     }
 
     SubShader

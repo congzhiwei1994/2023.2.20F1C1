@@ -1,0 +1,5 @@
+#ifndef SKIN_LIGHTING_INCLUDE
+#define SKIN_LIGHTING_INCLUDE
+
+
+#endif
