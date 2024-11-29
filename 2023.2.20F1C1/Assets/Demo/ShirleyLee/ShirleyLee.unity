@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 545848577}
   - component: {fileID: 545848578}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_6
+  m_Name: EyeSocket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -444,7 +444,7 @@ GameObject:
   - component: {fileID: 630546361}
   - component: {fileID: 630546362}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_5
+  m_Name: Legs
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -758,7 +758,7 @@ GameObject:
   - component: {fileID: 712382635}
   - component: {fileID: 712382636}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_13
+  m_Name: Irises
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1235,7 +1235,7 @@ GameObject:
   - component: {fileID: 915459373}
   - component: {fileID: 915459374}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_1
+  m_Name: Face
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1278,7 +1278,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: da6b491e3b415314ba1da2115aa6afdc, type: 2}
+  - {fileID: 2100000, guid: 0577c121918c31844aab73843b4a4fb8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1549,7 +1549,7 @@ GameObject:
   - component: {fileID: 962593365}
   - component: {fileID: 962593366}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_12
+  m_Name: Cornea
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1863,7 +1863,7 @@ GameObject:
   - component: {fileID: 972504374}
   - component: {fileID: 972504375}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_2
+  m_Name: Lips
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2177,7 +2177,7 @@ GameObject:
   - component: {fileID: 1066181097}
   - component: {fileID: 1066181098}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_15
+  m_Name: Toenails
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2491,7 +2491,7 @@ GameObject:
   - component: {fileID: 1203934389}
   - component: {fileID: 1203934390}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_4
+  m_Name: Ears
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2805,7 +2805,7 @@ GameObject:
   - component: {fileID: 1388924351}
   - component: {fileID: 1388924352}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_14
+  m_Name: Sclera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3168,7 +3168,7 @@ GameObject:
   - component: {fileID: 1483164245}
   - component: {fileID: 1483164246}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_8
+  m_Name: Arms
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4455,7 +4455,7 @@ GameObject:
   - component: {fileID: 1592830743}
   - component: {fileID: 1592830744}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_3
+  m_Name: Teeth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4769,7 +4769,7 @@ GameObject:
   - component: {fileID: 1638696600}
   - component: {fileID: 1638696601}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_9
+  m_Name: Pupils
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5083,7 +5083,7 @@ GameObject:
   - component: {fileID: 1664710514}
   - component: {fileID: 1664710515}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_11
+  m_Name: Fingernails
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5711,7 +5711,7 @@ GameObject:
   - component: {fileID: 1884110039}
   - component: {fileID: 1884110040}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_7
+  m_Name: Mouth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6142,7 +6142,7 @@ GameObject:
   - component: {fileID: 2063950358}
   - component: {fileID: 2063950359}
   m_Layer: 0
-  m_Name: Genesis8Female.Shape_sub_10
+  m_Name: EyeMoisture
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
