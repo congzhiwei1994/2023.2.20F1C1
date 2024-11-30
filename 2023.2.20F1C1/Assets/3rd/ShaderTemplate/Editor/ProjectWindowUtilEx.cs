@@ -11,6 +11,7 @@ public class ProjectWindowUtilEx
     {
         string path = Application.dataPath + "/3rd/ShaderTemplate/Editor/Template/SimpleLit.shader";
         ProjectWindowUtilEx.CreateScriptUtil(path, "New SimpleLit.shader");
+
     }
 
     [MenuItem("Assets/Create/Shader/URP/Lit")]
