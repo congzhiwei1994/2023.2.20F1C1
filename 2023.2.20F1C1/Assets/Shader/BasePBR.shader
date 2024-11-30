@@ -12,6 +12,7 @@ Shader "Demo/BasePBR"
         _Roughness("Roughness",Range(0,1)) = 0
         _AOMap("AOMap", 2D) = "white" {}
         _AO("AO",Range(0,1)) = 1
+        _EnvRotation ("EnvRotation",Range(0,360)) = 0
     }
 
     SubShader
@@ -79,6 +80,7 @@ Shader "Demo/BasePBR"
                 float _Metallic;
                 float _Roughness;
                 float _AO;
+                float _EnvRotation;
             CBUFFER_END
 
             TEXTURE2D(_BaseMap);
@@ -141,17 +143,36 @@ Shader "Demo/BasePBR"
                 float4 shadowCoord = TransformWorldToShadowCoord(i.positionWS);
                 float3 SH = SampleSHPixel(i.vertexSH, i.normalWS);
 
+                float2 screenUV = GetNormalizedScreenSpaceUV(i.positionCS);
+        
+                #if defined(_SCREEN_SPACE_OCCLUSION)
+                AmbientOcclusionFactor aoFactor;
+                aoFactor = GetScreenSpaceAmbientOcclusion(screenUV);
+                ao = min(ao,aoFactor.indirectAmbientOcclusion);
+                #endif
+
+
                 //------------------- brdf-----
                 float3 diffuseColor = lerp(baseColor, 0, metallic);
                 float3 specularColor = lerp(float3(0.4, 0.4, 0.4), baseColor, metallic);
 
 
                 Light light = GetMainLight(shadowCoord, i.positionWS, 1);
-                
-                float3 directLighting = SimpleShading(diffuseColor, specularColor, roughness, light, viewWS, normalWS);
-                directLighting = PBRLighting_UE4(roughness, diffuseColor, specularColor, viewWS, normalWS, light);
+                float atten = light.distanceAttenuation * light.shadowAttenuation;
+                float3 directLighting;
+                {
+                    directLighting = PBRDirect_UE4(diffuseColor, specularColor, viewWS, normalWS, light.direction,
+                                                   light.color, atten, roughness);
+                }
 
-                float3 c = directLighting;
+                float3 indirectLighting;
+                {
+                    indirectLighting = PBRIndirect(diffuseColor, specularColor, i.positionWS,
+                                                                               viewWS, normalWS, SH, ao, roughness,
+                                                                               _EnvRotation);
+                }
+
+                float3 c = directLighting + indirectLighting;
 
                 #if defined(_ADDITIONAL_LIGHTS)
     uint pixelLightCount = GetAdditionalLightsCount();
@@ -163,7 +184,9 @@ Shader "Demo/BasePBR"
 
         Light light = GetAdditionalLight(lightIndex, i.positionWS);
         {
-             c += PBRLighting_UE4(roughness, diffuseColor, specularColor, viewWS, normalWS, light);
+                atten = light.distanceAttenuation * light.shadowAttenuation;
+                c += PBRDirect_UE4(diffuseColor, specularColor, viewWS, normalWS, light.direction,
+                                                   light.color, atten, roughness);
         }
     }
                 #endif
@@ -171,7 +194,12 @@ Shader "Demo/BasePBR"
     LIGHT_LOOP_BEGIN(pixelLightCount)
          Light light = GetAdditionalLight(lightIndex, i.positionWS);
         {
-              c += PBRLighting_UE4(roughness, diffuseColor, specularColor, viewWS, normalWS, light);
+  
+                atten = light.distanceAttenuation * light.shadowAttenuation;
+                c += PBRDirect_UE4(diffuseColor, specularColor, viewWS, normalWS, light.direction,
+                                                   light.color, atten, roughness);
+            
+
         }
     LIGHT_LOOP_END
                 #endif

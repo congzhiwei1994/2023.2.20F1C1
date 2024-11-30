@@ -408,7 +408,7 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
---- !u!43 &555998524
+--- !u!43 &496286662
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -636,7 +636,7 @@ PrefabInstance:
     - target: {fileID: 7502223711604909079, guid: bade598b83601624baeb95583ebd4780, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 555998524}
+      objectReference: {fileID: 496286662}
     - target: {fileID: 7502223711604909098, guid: bade598b83601624baeb95583ebd4780, type: 3}
       propertyPath: m_Name
       value: SkyDome

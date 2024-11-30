@@ -3,11 +3,72 @@
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 #define PI 3.1415926535897932384626433
+#define UNITY_INV_PI 0.31830988618
 
 float Pow5(float x)
 {
     return x * x * x * x * x;
 }
+
+half3 EnvBRDFApprox(half3 SpecularColor, half Roughness, half NoV)
+{
+    // [ Lazarov 2013, "Getting More Physical in Call of Duty: Black Ops II" ]
+    // Adaptation to fit our G term.
+    const half4 c0 = {-1, -0.0275, -0.572, 0.022};
+    const half4 c1 = {1, 0.0425, 1.04, -0.04};
+    half4 r = Roughness * c0 + c1;
+    half a004 = min(r.x * r.x, exp2(-9.28 * NoV)) * r.x + r.y;
+    half2 AB = half2(-1.04, 1.04) * a004 + r.zw;
+
+    // Anything less than 2% is physically impossible and is instead considered to be shadowing
+    // Note: this is needed for the 'specular' show flag to work, since it uses a SpecularColor of 0
+    AB.y *= saturate(50.0 * SpecularColor.g);
+
+    return SpecularColor * AB.x + AB.y;
+}
+
+// Note: Disney diffuse must be multiply by diffuseAlbedo / PI. This is done outside of this function.
+half DisneyDiffuse_Unity(half NdotV, half NdotL, half LdotH, half perceptualRoughness)
+{
+    half fd90 = 0.5 + 2 * LdotH * LdotH * perceptualRoughness;
+    // Two schlick fresnel term
+    half lightScatter = (1 + (fd90 - 1) * Pow5(1 - NdotL));
+    half viewScatter = (1 + (fd90 - 1) * Pow5(1 - NdotV));
+
+    return lightScatter * viewScatter;
+}
+
+inline half3 FresnelTerm_Unity(half3 F0, half cosA)
+{
+    half t = Pow5(1 - cosA); // ala Schlick interpoliation
+    return F0 + (1 - F0) * t;
+}
+
+inline float GGXTerm_Unity(float NdotH, float roughness)
+{
+    float a2 = roughness * roughness;
+    float d = (NdotH * a2 - NdotH) * NdotH + 1.0f; // 2 mad
+    return UNITY_INV_PI * a2 / (d * d + 1e-7f); // This function is not intended to be running on Mobile,
+    // therefore epsilon is smaller than what can be represented by half
+}
+
+// Ref: http://jcgt.org/published/0003/02/03/paper.pdf
+inline float SmithJointGGXVisibilityTerm_Unity(float NdotL, float NdotV, float roughness)
+{
+    // Approximation of the above formulation (simplify the sqrt, not mathematically correct but close enough)
+    float a = roughness;
+    float lambdaV = NdotL * (NdotV * (1 - a) + a);
+    float lambdaL = NdotV * (NdotL * (1 - a) + a);
+
+    #if defined(SHADER_API_SWITCH)
+    return 0.5f / (lambdaV + lambdaL + UNITY_HALF_MIN);
+    #else
+    return 0.5f / (lambdaV + lambdaL + 1e-5f);
+    #endif
+}
+
+// ---------------------------------------------------------------------------------------
+// ------------------------------------ UE -----------------------------------------------
 
 // [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
 float3 F_Schlick_UE4(float3 SpecularColor, float VoH)
