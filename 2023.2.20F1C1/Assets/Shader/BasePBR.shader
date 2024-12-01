@@ -144,7 +144,7 @@ Shader "Demo/BasePBR"
                 float3 SH = SampleSHPixel(i.vertexSH, i.normalWS);
 
                 float2 screenUV = GetNormalizedScreenSpaceUV(i.positionCS);
-        
+
                 #if defined(_SCREEN_SPACE_OCCLUSION)
                 AmbientOcclusionFactor aoFactor;
                 aoFactor = GetScreenSpaceAmbientOcclusion(screenUV);
@@ -156,53 +156,10 @@ Shader "Demo/BasePBR"
                 float3 diffuseColor = lerp(baseColor, 0, metallic);
                 float3 specularColor = lerp(float3(0.4, 0.4, 0.4), baseColor, metallic);
 
-
-                Light light = GetMainLight(shadowCoord, i.positionWS, 1);
-                float atten = light.distanceAttenuation * light.shadowAttenuation;
-                float3 directLighting;
-                {
-                    directLighting = PBRDirect_UE4(diffuseColor, specularColor, viewWS, normalWS, light.direction,
-                                                   light.color, atten, roughness);
-                }
-
-                float3 indirectLighting;
-                {
-                    indirectLighting = PBRIndirect(diffuseColor, specularColor, i.positionWS,
-                                                                               viewWS, normalWS, SH, ao, roughness,
-                                                                               _EnvRotation);
-                }
-
-                float3 c = directLighting + indirectLighting;
-
-                #if defined(_ADDITIONAL_LIGHTS)
-    uint pixelLightCount = GetAdditionalLightsCount();
-
-                #if USE_FORWARD_PLUS
-    for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
-    {
-        FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
-
-        Light light = GetAdditionalLight(lightIndex, i.positionWS);
-        {
-                atten = light.distanceAttenuation * light.shadowAttenuation;
-                c += PBRDirect_UE4(diffuseColor, specularColor, viewWS, normalWS, light.direction,
-                                                   light.color, atten, roughness);
-        }
-    }
-                #endif
-
-    LIGHT_LOOP_BEGIN(pixelLightCount)
-         Light light = GetAdditionalLight(lightIndex, i.positionWS);
-        {
-  
-                atten = light.distanceAttenuation * light.shadowAttenuation;
-                c += PBRDirect_UE4(diffuseColor, specularColor, viewWS, normalWS, light.direction,
-                                                   light.color, atten, roughness);
-            
-
-        }
-    LIGHT_LOOP_END
-                #endif
+         
+                float3 c = StanderdPBRLighting(diffuseColor, specularColor, viewWS, i.positionWS, normalWS, roughness,
+                                               ao,
+                                               _EnvRotation);
 
                 return float4(c, 1);
             }

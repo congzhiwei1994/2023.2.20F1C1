@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: EyeMoisture
-  m_Shader: {fileID: -6465566751694194690, guid: f87ea70fecfb3154f92f67d0dbe53cb4, type: 3}
+  m_Shader: {fileID: 4800000, guid: 1e07d5c8e42909642b62744b9e3442a9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -33,7 +33,7 @@ Material:
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: -1
   stringTagMap:
     MotionVector: User
   disabledShaderPasses:
@@ -43,11 +43,35 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AOMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _HeightMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MetallicMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SSSLUTMAP:
+        m_Texture: {fileID: 2800000, guid: 8b63aa19566dab140a27a764eb5135a0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecularMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -65,15 +89,27 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AO: 1
     - _Alpha: 0
     - _Coat: 0.25
+    - _EnvRotation: 0
     - _Height: 2
     - _HeightOffset: 0.25
     - _IndexOfRefraction: 1.38
+    - _Lobe0Roughness: 0.5
+    - _Lobe1Roughness: 0.5
+    - _LobeMix: 0.85
+    - _Metallic: 1
     - _Normal: 0.250633
+    - _NormalScale: 1
     - _QueueControl: 1
     - _QueueOffset: 0
+    - _Roughness: 0
+    - _SSSPower: 5
+    - _SSSRange: 0.5
     - _Smoothness: 0.97
-    m_Colors: []
+    - _Specular: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
