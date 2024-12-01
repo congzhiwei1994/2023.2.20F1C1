@@ -2,29 +2,18 @@ Shader "Demo/Hair"
 {
     Properties
     {
+        _AlphaMap("AlphaMap", 2D) = "white" {}
+
         _BaseColor("Base Color",color) = (1,1,1,1)
         _BaseMap("BaseMap", 2D) = "white" {}
         _NormalMap("NormalMap", 2D) = "bump" {}
         _NormalScale("NormalScale",Range(0,1)) = 1
-        _SpecularMap("SpecularMap", 2D) = "white" {}
-        _Specular("Specular",Range(0,1)) = 1
+        _Scatter("Scatter",Range(0,1)) = 1
         _RoughnessMap("RoughnessMap", 2D) = "white" {}
-        _Lobe0Roughness("Lobe0Roughness",Range(0,1)) = 0.5
-        _Lobe1Roughness("Lobe1Roughness",Range(0,1)) = 0.5
-        _LobeMix("LobeMix",Range(0,1)) = 0.85
-
-        _DetailNormalMap("DetailNormalMap", 2D) = "bump" {}
-        _DetailNormalScale("DetailNormalScale",Range(0,1)) = 1
-        _DetailNormalTilling("_DetailNormalTilling",Range(0,10)) = 5
-        _DetailNormalMask("_DetailNormalMask", 2D) = "black" {}
-
+        _Roughness("Roughness",Range(0,1)) = 0
         _AOMap("AOMap", 2D) = "white" {}
         _AO("AO",Range(0,1)) = 1
         _EnvRotation ("EnvRotation",Range(0,360)) = 0
-
-        _SSSLUTMAP("SSSLUTMAP", 2D) = "white" {}
-        _SSSRange("SSSRange",Range(0,1)) = 0.5
-        _SSSPower("SSSPower",Range(0,10)) = 5
     }
 
     SubShader
@@ -39,7 +28,6 @@ Shader "Demo/Hair"
         {
             Name "ForwardLit"
             HLSLPROGRAM
-            #pragma target 5.0
             #pragma prefer_hlslcc gles
             #pragma exclude_renderers d3d11_9x
             #pragma vertex vert
@@ -54,6 +42,8 @@ Shader "Demo/Hair"
             #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
+            #pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
             #pragma multi_compile _ _LIGHT_LAYERS
             #pragma multi_compile _ _FORWARD_PLUS
 
@@ -88,16 +78,10 @@ Shader "Demo/Hair"
                 half4 _BaseColor;
                 float4 _BaseMap_ST;
                 float _NormalScale;
-                float _Specular;
-                float _Lobe0Roughness;
-                float _Lobe1Roughness;
-                float _LobeMix;
+                float _Scatter;
+                float _Roughness;
                 float _AO;
                 float _EnvRotation;
-                float _SSSPower;
-                float _SSSRange;
-                float _DetailNormalTilling;
-                float _DetailNormalScale;
             CBUFFER_END
 
             TEXTURE2D(_BaseMap);
@@ -106,11 +90,8 @@ Shader "Demo/Hair"
             TEXTURE2D(_NormalMap);
             SAMPLER(sampler_NormalMap);
 
-            TEXTURE2D(_DetailNormalMap);
-            SAMPLER(sampler_DetailNormalMap);
-
-            TEXTURE2D(_DetailNormalMapMask);
-            SAMPLER(sampler_DetailNormalMapMask);
+            TEXTURE2D(_MetallicMap);
+            SAMPLER(sampler_MetallicMap);
 
             TEXTURE2D(_RoughnessMap);
             SAMPLER(sampler_RoughnessMap);
@@ -118,11 +99,8 @@ Shader "Demo/Hair"
             TEXTURE2D(_AOMap);
             SAMPLER(sampler_AOMap);
 
-            TEXTURE2D(_SSSLUTMAP);
-            SAMPLER(sampler_SSSLUTMAP);
-
-            TEXTURE2D(_SpecularMap);
-            SAMPLER(sampler_SpecularMap);
+            TEXTURE2D(_AlphaMap);
+            SAMPLER(sampler_AlphaMap);
 
 
             Varyings vert(Attributes input)
@@ -140,7 +118,7 @@ Shader "Demo/Hair"
                 o.normalWS = normalInput.normalWS;
                 o.tangentWS = tangentWS;
                 o.vertexSH = OUTPUT_SH4(o.positionWS, o.normalWS.xyz,
-                            GetWorldSpaceNormalizeViewDir(o.positionWS), o.vertexSH);
+                                        GetWorldSpaceNormalizeViewDir(o.positionWS), o.vertexSH);
                 o.positionCS = vertexInput.positionCS;
 
                 return o;
@@ -148,46 +126,26 @@ Shader "Demo/Hair"
 
             half4 frag(Varyings i) : SV_Target
             {
-                float3 biTangentWS = i.tangentWS.w * cross(i.normalWS.xyz, i.tangentWS.xyz);
-                float3x3 tbn = float3x3(i.tangentWS.xyz, biTangentWS, i.normalWS.xyz);
-
                 half4 baseColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
                 baseColor = baseColor * _BaseColor;
 
-                half3 specularMap = SAMPLE_TEXTURE2D(_SpecularMap, sampler_SpecularMap, i.uv) * _Specular;
+                half alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, i.uv);
 
                 half roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, i.uv);
-                half lobe0Rounghness = max(saturate(roughness * _Lobe0Roughness), 0.001);
-                half lobe1Rounghness = max(saturate(roughness * _Lobe1Roughness), 0.001);
-
+                roughness = max(saturate(roughness * _Roughness), 0.001);
                 half ao = SAMPLE_TEXTURE2D(_AOMap, sampler_AOMap, i.uv);
                 ao = lerp(1, ao, _AO);
 
-                float detailMask = SAMPLE_TEXTURE2D(_DetailNormalMapMask, sampler_DetailNormalMapMask, i.uv);
-
-                float4 detailNormalMap = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailNormalMap,
-                                  i.uv * _DetailNormalTilling);
-                float3 detailNormalTS = UnpackNormalScale(detailNormalMap, _DetailNormalScale);
-                float3 detailNormalWS = NormalizeNormalPerPixel(TransformTangentToWorldDir(detailNormalTS, tbn));
-
-                float4 detailNormalMap_Blur = SAMPLE_TEXTURE2D_LOD(_DetailNormalMap, sampler_DetailNormalMap,
-                   i.uv * _DetailNormalTilling, 4);
-                float3 detailNormalTS_Blur = UnpackNormalScale(detailNormalMap_Blur, _DetailNormalScale);
-                float3 detailNormalWS_Blur = NormalizeNormalPerPixel(
-                    TransformTangentToWorldDir(detailNormalTS_Blur, tbn));
 
                 float4 normalMap = SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, i.uv);
                 float3 normalTS = UnpackNormalScale(normalMap, _NormalScale);
+                float3 biTangentWS = i.tangentWS.w * cross(i.normalWS.xyz, i.tangentWS.xyz);
+                float3x3 tbn = float3x3(i.tangentWS.xyz, biTangentWS, i.normalWS.xyz);
                 float3 normalWS = NormalizeNormalPerPixel(TransformTangentToWorldDir(normalTS, tbn));
 
-                float4 normalMap_blur = SAMPLE_TEXTURE2D_LOD(_NormalMap, sampler_NormalMap, i.uv, 4);
-                float3 normalTS_blur = UnpackNormalScale(normalMap_blur, _NormalScale);
-                float3 normalWS_blur = NormalizeNormalPerPixel(TransformTangentToWorldDir(normalTS_blur, tbn));
-
-                normalWS = lerp(normalWS, detailNormalWS, detailMask);
-                normalWS_blur = lerp(normalWS_blur, detailNormalWS_Blur, detailMask);
-
                 float3 viewWS = GetWorldSpaceNormalizeViewDir(i.positionWS);
+                float4 shadowCoord = TransformWorldToShadowCoord(i.positionWS);
+                float3 SH = SampleSHPixel(i.vertexSH, i.normalWS);
 
                 float2 screenUV = GetNormalizedScreenSpaceUV(i.positionCS);
 
@@ -195,22 +153,19 @@ Shader "Demo/Hair"
                 AmbientOcclusionFactor aoFactor;
                 aoFactor = GetScreenSpaceAmbientOcclusion(screenUV);
                 ao = min(ao,aoFactor.indirectAmbientOcclusion);
-                
                 #endif
+
 
                 //------------------- brdf-----
                 float3 diffuseColor = lerp(baseColor, 0, 0);
-                float3 specularColor = lerp(float3(0.4, 0.4, 0.4) * specularMap, baseColor, 0);
+                float3 specularColor = lerp(float3(0.4, 0.4, 0.4), baseColor, 0);
 
-                /**
-                float3 c = SkinLighting(_SSSLUTMAP, sampler_SSSLUTMAP, diffuseColor, specularColor, viewWS,
-                                                            i.positionWS, normalWS, normalWS_blur,
-                                                            lobe0Rounghness,
-                                                            lobe1Rounghness,
-                                                            _LobeMix, ao,
-                                                            _EnvRotation, _SSSRange, _SSSPower);
-**/
-                return 1;
+                float3 direct = DirectLighting_float(diffuseColor, specularColor, roughness, i.positionWS, normalWS,
+                                                 viewWS, _Scatter);
+                float3 c = direct;
+
+                clip(alpha-0.1);
+                return float4(c, 1);
             }
             ENDHLSL
         }

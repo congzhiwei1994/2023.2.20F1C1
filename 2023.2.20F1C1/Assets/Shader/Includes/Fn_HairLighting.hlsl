@@ -1,6 +1,10 @@
 #ifndef HAIR_LIGHTING_INCLUDE
 #define HAIR_LIGHTING_INCLUDE
 
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
 #include "Fn_Common.hlsl"
 #include "ShadingModel.hlsl"
 
@@ -151,11 +155,11 @@ float3 HairShading(float3 BaseColor, float Specular, float Roughness, float Scat
     return S;
 }
 
-void DirectLighting_float(float3 DiffuseColor, float Specular, float Roughness, float3 WorldPos, half3 N, half3 V,
-                          float Scatter, out float3 DirectLighting)
+float3 DirectLighting_float(float3 DiffuseColor, float Specular, float Roughness, float3 WorldPos, half3 N, half3 V,
+                            float Scatter)
 {
-    DirectLighting = float3(0.5, 0.5, 0);
-    #ifndef SHADERGRAPH_PREVIEW
+    float3 color = float3(0, 0, 0);
+
     #if defined(_MAIN_LIGHT_SHADOWS_SCREEN) && !defined(_SURFACE_TYPE_TRANSPARENT)
         float4 clipPos = TransformWorldToHClip(WorldPos);
         float4 ShadowCoord = ComputeScreenPos(clipPos);
@@ -163,8 +167,8 @@ void DirectLighting_float(float3 DiffuseColor, float Specular, float Roughness, 
     float4 ShadowCoord = TransformWorldToShadowCoord(WorldPos);
     #endif
     float ShadowMask = float4(1.0, 1.0, 1.0, 1.0);
-    //--------ֱ�ӹ���--------
-    //����
+
+
     half3 DirectLighting_MainLight = half3(0, 0, 0);
     {
         Light light = GetMainLight(ShadowCoord, WorldPos, ShadowMask);
@@ -175,11 +179,10 @@ void DirectLighting_float(float3 DiffuseColor, float Specular, float Roughness, 
         half ShadowScatter = lerp(0.5, 0.3, Scatter);
         Shadow = lerp(light.shadowAttenuation, saturate(light.shadowAttenuation + ShadowScatter), VoL);
         half3 LightColor = light.color * PI * Shadow;
-        DirectLighting_MainLight = bsdfValue * LightColor;
+        color = bsdfValue * LightColor;
     }
 
-    //���ӹ�
-    half3 DirectLighting_AddLight = half3(0, 0, 0);
+
     #ifdef _ADDITIONAL_LIGHTS
 		uint pixelLightCount = GetAdditionalLightsCount();
         for (int lightIndex = 0u; lightIndex < pixelLightCount; ++lightIndex)
@@ -192,42 +195,22 @@ void DirectLighting_float(float3 DiffuseColor, float Specular, float Roughness, 
 			half ShadowScatter = lerp(0.5,0.3,Scatter);
 			Shadow = lerp(light.shadowAttenuation,saturate(light.shadowAttenuation + ShadowScatter), VoL);
 			half3 LightColor = light.color * PI * Shadow * light.distanceAttenuation;
-            DirectLighting_AddLight += bsdfValue * LightColor;
+          color += bsdfValue * LightColor;
         }
     #endif
-    DirectLighting = DirectLighting_MainLight + DirectLighting_AddLight;
-    #endif
+
+    return color;
 }
 
-//��ӣ�����������
-void IndirectLighting_float(float3 DiffuseColor, float Specular, float Roughness, half3 WorldPos, half3 N, half3 V,
-                            float Scatter, half Occlusion, half EnvRotate, out float3 IndirectLighting)
+float3 IndirectLighting(float3 DiffuseColor, float Specular, float Roughness, half3 WorldPos,
+                        half3 N, half3 V,
+                        float Scatter, half Occlusion, half EnvRotate)
 {
-    IndirectLighting = float3(0.0, 0.0, 0.0);
-
-    #ifndef SHADERGRAPH_PREVIEW
-    //float NoV = saturate(abs(dot(N,V)) + 1e-5);
-    //half3 SpecularColor = (Specular * 0.04f).xxx;
-    //float3 DiffuseAO = AOMultiBounce(DiffuseColor,Occlusion);
-    //float MainLightShadow = clamp(GetMainLightShadow(WorldPos),0.35,1.0);
-    //float SpecularOcclusion = GetSpecularOcclusion(NoV,Pow2(Roughness),Occlusion) * MainLightShadow;
-    //float3 SpecularAO = AOMultiBounce(SpecularColor,SpecularOcclusion);
-
-    //-------------SH---------
     float3 L = normalize(V - N * dot(V, N));
     half3 IndirectDiffuseBRDF = 2 * PI * HairShading(DiffuseColor, Specular, Roughness, Scatter, N, V, L, 1, 0, 0.2);
     half3 RadianceSH = SampleSH(N);
     half3 IndirectDiffuse = IndirectDiffuseBRDF * RadianceSH;
-    //-------------IBL-------------
-    //N = normalize(cross(cross(N,V),N));
-    //half3 R = reflect(-V, N);
-    //R = RotateDirection(R,EnvRotate);
-    //half3 SpecularLobe = SpecularIBL(R,WorldPos,Roughness,SpecularColor,NoV);
-    //float3 IndirectSpecular = SpecularLobe * SpecularAO;
-    //IndirectLighting = IndirectDiffuse + IndirectSpecular;
-
-    IndirectLighting = IndirectDiffuse;
-    #endif
+    return IndirectDiffuse;
 }
 
 

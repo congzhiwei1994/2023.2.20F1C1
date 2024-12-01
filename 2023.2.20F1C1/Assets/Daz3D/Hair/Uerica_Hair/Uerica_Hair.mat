@@ -48,8 +48,12 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _AlphaMap:
+        m_Texture: {fileID: 2800000, guid: 0d58ccc5b61b8164eb23ba23acca66f5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: ada6c04aa63127f489d11b6dec7eb21b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CutoutOpacityMap:
@@ -73,6 +77,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HeightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -122,12 +130,15 @@ Material:
     - _Lobe0Roughness: 0.5
     - _Lobe1Roughness: 0.5
     - _LobeMix: 0.85
+    - _Metallic: 1
     - _NormalScale: 1
     - _NormalStrength: 0.5
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _Roughness: 0
     - _SSSPower: 5
     - _SSSRange: 0.5
+    - _Scatter: 0.683
     - _Specular: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
