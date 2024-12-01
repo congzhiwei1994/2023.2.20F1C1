@@ -60,7 +60,8 @@ Shader "Demo/Skin"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-            #include "Includes/Fn_Lighting.hlsl"
+            #include "Includes/Fn_SkinLighting.hlsl"
+            
             #define _NORMALMAP
 
             struct Attributes

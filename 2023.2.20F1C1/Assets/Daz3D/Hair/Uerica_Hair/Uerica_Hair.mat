@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Uerica_Hair
-  m_Shader: {fileID: -6465566751694194690, guid: eca376bda456c4f749bd5448ad5e195d, type: 3}
+  m_Shader: {fileID: 4800000, guid: 1a7f5fa520d85004d84aeba2d8ce9d05, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -34,7 +34,7 @@ Material:
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
-  m_CustomRenderQueue: 2450
+  m_CustomRenderQueue: -1
   stringTagMap:
     MotionVector: User
   disabledShaderPasses:
@@ -44,8 +44,24 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AOMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _CutoutOpacityMap:
         m_Texture: {fileID: 2800000, guid: 0d58ccc5b61b8164eb23ba23acca66f5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMask:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DiffuseMap:
@@ -62,6 +78,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 2800000, guid: f52521d970263ca488f7af3e4216eae0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SSSLUTMAP:
+        m_Texture: {fileID: 2800000, guid: 8b63aa19566dab140a27a764eb5135a0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecularMap:
@@ -83,18 +107,30 @@ Material:
     m_Ints: []
     m_Floats:
     - ROUGHNESS_IS_SMOOTHNESS: 0
+    - _AO: 1
     - _AlphaClipThreshold: 0.8
     - _AlphaOffset: 0.25
     - _AlphaPower: 1
     - _AlphaStrength: 1.2
+    - _DetailNormalScale: 1
+    - _DetailNormalTilling: 5
     - _DiffuseMultiplier: 1.5
+    - _EnvRotation: 0
     - _GlossyRoughness: 0.97425294
     - _Height: 3.35968
     - _HeightOffset: 0.25
+    - _Lobe0Roughness: 0.5
+    - _Lobe1Roughness: 0.5
+    - _LobeMix: 0.85
+    - _NormalScale: 1
     - _NormalStrength: 0.5
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _SSSPower: 5
+    - _SSSRange: 0.5
+    - _Specular: 1
     m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Diffuse: {r: 0.69411767, g: 0.69411767, b: 0.69411767, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

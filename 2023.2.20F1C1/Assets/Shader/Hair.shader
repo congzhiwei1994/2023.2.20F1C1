@@ -1,4 +1,4 @@
-Shader "Demo/Skin"
+Shader "Demo/Hair"
 {
     Properties
     {
@@ -60,7 +60,7 @@ Shader "Demo/Skin"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-            #include "Includes/Fn_Lighting.hlsl"
+            #include "Includes/Fn_HairLighting.hlsl"
             #define _NORMALMAP
 
             struct Attributes
@@ -140,7 +140,7 @@ Shader "Demo/Skin"
                 o.normalWS = normalInput.normalWS;
                 o.tangentWS = tangentWS;
                 o.vertexSH = OUTPUT_SH4(o.positionWS, o.normalWS.xyz,
-                                        GetWorldSpaceNormalizeViewDir(o.positionWS), o.vertexSH);
+                            GetWorldSpaceNormalizeViewDir(o.positionWS), o.vertexSH);
                 o.positionCS = vertexInput.positionCS;
 
                 return o;
@@ -166,12 +166,12 @@ Shader "Demo/Skin"
                 float detailMask = SAMPLE_TEXTURE2D(_DetailNormalMapMask, sampler_DetailNormalMapMask, i.uv);
 
                 float4 detailNormalMap = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailNormalMap,
-                                                          i.uv * _DetailNormalTilling);
+                                  i.uv * _DetailNormalTilling);
                 float3 detailNormalTS = UnpackNormalScale(detailNormalMap, _DetailNormalScale);
                 float3 detailNormalWS = NormalizeNormalPerPixel(TransformTangentToWorldDir(detailNormalTS, tbn));
 
                 float4 detailNormalMap_Blur = SAMPLE_TEXTURE2D_LOD(_DetailNormalMap, sampler_DetailNormalMap,
-                    i.uv * _DetailNormalTilling, 4);
+                   i.uv * _DetailNormalTilling, 4);
                 float3 detailNormalTS_Blur = UnpackNormalScale(detailNormalMap_Blur, _DetailNormalScale);
                 float3 detailNormalWS_Blur = NormalizeNormalPerPixel(
                     TransformTangentToWorldDir(detailNormalTS_Blur, tbn));
@@ -179,14 +179,14 @@ Shader "Demo/Skin"
                 float4 normalMap = SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, i.uv);
                 float3 normalTS = UnpackNormalScale(normalMap, _NormalScale);
                 float3 normalWS = NormalizeNormalPerPixel(TransformTangentToWorldDir(normalTS, tbn));
-                
+
                 float4 normalMap_blur = SAMPLE_TEXTURE2D_LOD(_NormalMap, sampler_NormalMap, i.uv, 4);
                 float3 normalTS_blur = UnpackNormalScale(normalMap_blur, _NormalScale);
                 float3 normalWS_blur = NormalizeNormalPerPixel(TransformTangentToWorldDir(normalTS_blur, tbn));
 
-                normalWS = lerp(normalWS,detailNormalWS,detailMask);
-                normalWS_blur = lerp(normalWS_blur,detailNormalWS_Blur,detailMask);
-                
+                normalWS = lerp(normalWS, detailNormalWS, detailMask);
+                normalWS_blur = lerp(normalWS_blur, detailNormalWS_Blur, detailMask);
+
                 float3 viewWS = GetWorldSpaceNormalizeViewDir(i.positionWS);
 
                 float2 screenUV = GetNormalizedScreenSpaceUV(i.positionCS);
@@ -202,15 +202,15 @@ Shader "Demo/Skin"
                 float3 diffuseColor = lerp(baseColor, 0, 0);
                 float3 specularColor = lerp(float3(0.4, 0.4, 0.4) * specularMap, baseColor, 0);
 
-
+                /**
                 float3 c = SkinLighting(_SSSLUTMAP, sampler_SSSLUTMAP, diffuseColor, specularColor, viewWS,
-                    i.positionWS, normalWS, normalWS_blur,
-                    lobe0Rounghness,
-                    lobe1Rounghness,
-                    _LobeMix, ao,
-                    _EnvRotation, _SSSRange, _SSSPower);
-
-                return float4(c, 1);
+                                                            i.positionWS, normalWS, normalWS_blur,
+                                                            lobe0Rounghness,
+                                                            lobe1Rounghness,
+                                                            _LobeMix, ao,
+                                                            _EnvRotation, _SSSRange, _SSSPower);
+**/
+                return 1;
             }
             ENDHLSL
         }
