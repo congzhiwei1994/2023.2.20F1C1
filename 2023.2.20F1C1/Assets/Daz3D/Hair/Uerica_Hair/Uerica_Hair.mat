@@ -84,6 +84,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NoiseMap:
+        m_Texture: {fileID: 2800000, guid: ab90ac2c48d9ab14db8505a5583b724e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 2800000, guid: f52521d970263ca488f7af3e4216eae0, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -120,10 +124,11 @@ Material:
     - _AlphaOffset: 0.25
     - _AlphaPower: 1
     - _AlphaStrength: 1.2
+    - _ClipOff: 0.2
     - _DetailNormalScale: 1
     - _DetailNormalTilling: 5
     - _DiffuseMultiplier: 1.5
-    - _EnvRotation: 0
+    - _EnvRotation: 147
     - _GlossyRoughness: 0.97425294
     - _Height: 3.35968
     - _HeightOffset: 0.25
@@ -131,15 +136,16 @@ Material:
     - _Lobe1Roughness: 0.5
     - _LobeMix: 0.85
     - _Metallic: 1
-    - _NormalScale: 1
+    - _NoiseIntensity: 0.068
+    - _NormalScale: 0.89
     - _NormalStrength: 0.5
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Roughness: 0
+    - _Roughness: 0.17
     - _SSSPower: 5
     - _SSSRange: 0.5
-    - _Scatter: 0.683
-    - _Specular: 1
+    - _Scatter: 0.188
+    - _Specular: 0.385
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Diffuse: {r: 0.69411767, g: 0.69411767, b: 0.69411767, a: 1}
