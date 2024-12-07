@@ -1,0 +1,11 @@
+fileFormatVersion: 2
+guid: f73b8889b7c523344988df0e45fbc33b
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _MidPlaneHeightMap: {fileID: 2800000, guid: b7818b2c1217e34489f67d47e9c5fd1a, type: 3}
+  - _EyeDirection: {fileID: 2800000, guid: 1dfa29f86ccc7ff42a8430a0aef7fa56, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

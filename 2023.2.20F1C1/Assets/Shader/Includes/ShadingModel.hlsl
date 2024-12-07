@@ -2,10 +2,11 @@
 #define SHADINGMODEL_LIGHTING_INCLUDE
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-#include "Fn_Common.hlsl"
+
+
 #define PI 3.1415926535897932384626433
 #define UNITY_INV_PI 0.31830988618
-
+#include "Fn_Common.hlsl"
 
 half3 EnvBRDFApprox(half3 SpecularColor, half Roughness, half NoV)
 {

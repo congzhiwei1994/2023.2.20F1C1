@@ -157,7 +157,7 @@ Shader "Demo/BasePBR"
                 float3 specularColor = lerp(float3(0.4, 0.4, 0.4), baseColor, metallic);
 
          
-                float3 c = StanderdPBRLighting(diffuseColor, specularColor, viewWS, i.positionWS, normalWS, roughness,
+                float3 c = StanderdPBRLighting_float(diffuseColor, specularColor, viewWS, i.positionWS, normalWS, roughness,
                                                ao,
                                                _EnvRotation);
 

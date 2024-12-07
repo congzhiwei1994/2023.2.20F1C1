@@ -24,9 +24,9 @@ float3 SkinIndirect(float3 DiffuseColor, float3 SpecularColor, float3 PositionWS
     specularAO = GetSpecularOcclusion(NoV, Roughness, specularAO);
 
     float3 diffuse = DiffuseColor * SH * diffuseAO;
-    float3 lube0spcular = EnvSpecularDFG(R, SpecularColor, PositionWS, V,
+    float3 lube0spcular = EnvSpecularDFG(R, SpecularColor, PositionWS, 
                                          NoV, occlusion, Lube0Roughness);
-    float3 lube1spcular = EnvSpecularDFG(R, SpecularColor, PositionWS, V,
+    float3 lube1spcular = EnvSpecularDFG(R, SpecularColor, PositionWS, 
                                          NoV, occlusion, Lube1Roughness);
 
     float3 specular = lerp(lube0spcular, lube1spcular, 1 - LubeMix) * specularAO;

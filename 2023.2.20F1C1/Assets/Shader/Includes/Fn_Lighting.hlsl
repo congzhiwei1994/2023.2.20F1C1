@@ -69,7 +69,7 @@ float3 DualSpecularGGX(float Lube0Roughness, float Lube1Roughness, float LubeMix
     return (D * Vis) * F;
 }
 
-float3 EnvSpecularDFG(float3 R, float3 SpecularColor, float3 PositionWS, float3 V,
+float3 EnvSpecularDFG(float3 R, float3 SpecularColor, float3 PositionWS,
                       float NoV, half occlusion, float Roughness)
 {
     float3 specularLD = GlossyEnvironmentReflection(R, PositionWS, Roughness, occlusion);
@@ -90,7 +90,7 @@ float3 PBRIndirect(float3 DiffuseColor, float3 SpecularColor, float3 PositionWS,
     specularAO = GetSpecularOcclusion(NoV, Roughness, specularAO);
 
     float3 diffuse = DiffuseColor * SH * diffuseAO;
-    float3 spcular = EnvSpecularDFG(R, SpecularColor, PositionWS, V, NoV, occlusion, Roughness) * specularAO;
+    float3 spcular = EnvSpecularDFG(R, SpecularColor, PositionWS, NoV, occlusion, Roughness) * specularAO;
 
     float3 c = diffuse + spcular;
     return c;
@@ -114,48 +114,25 @@ float3 PBRDirect_UE4(float3 DiffuseColor, float3 SpecularColor, float3 V,
     return c * radiance * UNITY_PI;
 }
 
-float3 PBRLighting_Unity(float3 DiffuseColor, float3 SpecularColor, float3 V,
-                         float3 N, float3 L, float Roughness)
-{
-    float3 H = normalize(L + V);
-    float NoL = saturate(dot(N, L));
-    float NoH = saturate(dot(N, H));
-    float NoV = saturate(abs(dot(N, V)) + 0.001);
-    float VoH = saturate(dot(V, H));
 
-    float3 diffuse = DisneyDiffuse_Unity(NoV, NoV, VoH, Roughness) * DiffuseColor;
-    float Vis = SmithJointGGXVisibilityTerm_Unity(NoL, NoV, Roughness * Roughness);
-    float D = GGXTerm_Unity(NoH, Roughness * Roughness);
-    float3 F = FresnelTerm_Unity(SpecularColor, NoL);
-    float3 specular = Vis * D * F * UNITY_PI;
-    float3 color = diffuse + specular;
-    return color * NoL;
-}
-
-float3 StanderdPBRLighting(float3 DiffuseColor, float3 SpecularColor, float3 viewWS, float3 positionWS, float3 normalWS,
+float3 StanderdPBRLighting_float(float3 DiffuseColor, float3 SpecularColor, float3 viewWS, float3 positionWS, float3 normalWS,
                            float roughness, float ao, float EnvRotation)
 {
+    float3 sh = SampleSH(normalWS);
     float4 shadowCoord = TransformWorldToShadowCoord(positionWS);
-
     Light light = GetMainLight(shadowCoord, positionWS, 1);
     float atten = light.distanceAttenuation * light.shadowAttenuation;
 
-    float3 directLighting;
-    {
-        directLighting = PBRDirect_UE4(DiffuseColor, SpecularColor, viewWS, normalWS, light.direction,
-                                       light.color, atten, roughness);
-    }
+    float3 directLighting = PBRDirect_UE4(DiffuseColor, SpecularColor, viewWS, normalWS, light.direction,
+                                          light.color, atten, roughness);
 
-    float3 indirectLighting;
-    {
-        float3 sh = SampleSH(normalWS);
-        indirectLighting = PBRIndirect(DiffuseColor, SpecularColor, positionWS,
-                                       viewWS, normalWS, sh, ao, roughness,
-                                       EnvRotation);
-    }
+    float3 indirectLighting = PBRIndirect(DiffuseColor, SpecularColor, positionWS,
+                                          viewWS, normalWS, sh, ao, roughness,
+                                          EnvRotation);
 
-    float3 c = directLighting + indirectLighting;
+    float3 color = directLighting + indirectLighting;
 
+    
     #if defined(_ADDITIONAL_LIGHTS)
     uint pixelLightCount = GetAdditionalLightsCount();
 
@@ -167,7 +144,7 @@ float3 StanderdPBRLighting(float3 DiffuseColor, float3 SpecularColor, float3 vie
         Light light = GetAdditionalLight(lightIndex, positionWS);
         {
                 atten = light.distanceAttenuation * light.shadowAttenuation;
-                c += PBRDirect_UE4(DiffuseColor, SpecularColor, viewWS, normalWS, light.direction,
+                color+= PBRDirect_UE4(DiffuseColor, SpecularColor, viewWS, normalWS, light.direction,
                                                    light.color, atten, roughness);
         }
     }
@@ -178,7 +155,7 @@ float3 StanderdPBRLighting(float3 DiffuseColor, float3 SpecularColor, float3 vie
         {
   
                 atten = light.distanceAttenuation * light.shadowAttenuation;
-                c += PBRDirect_UE4(DiffuseColor, SpecularColor, viewWS, normalWS, light.direction,
+               color += PBRDirect_UE4(DiffuseColor, SpecularColor, viewWS, normalWS, light.direction,
                                            light.color, atten, roughness);
             
 
@@ -186,7 +163,7 @@ float3 StanderdPBRLighting(float3 DiffuseColor, float3 SpecularColor, float3 vie
     LIGHT_LOOP_END
     #endif
 
-    return c;
+    return color;
 }
 
 

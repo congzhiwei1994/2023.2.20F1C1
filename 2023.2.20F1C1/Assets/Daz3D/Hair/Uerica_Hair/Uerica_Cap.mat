@@ -102,7 +102,7 @@ Material:
     m_Colors:
     - _Diffuse: {r: 0.69411767, g: 0.69411767, b: 0.69411767, a: 1}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
-    - _HairCapColor: {r: 0.38679245, g: 0.20804504, b: 0.078453176, a: 0}
+    - _HairCapColor: {r: 0.103773594, g: 0.06415523, b: 0.035733357, a: 0}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
