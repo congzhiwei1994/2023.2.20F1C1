@@ -2,7 +2,7 @@
 #define EYE_LIGHTING_INCLUDE
 
 #include "ShadingModel.hlsl"
-#include "Fn_Lighting.hlsl"
+ #include "Fn_Lighting.hlsl"
 
 #define UNITY_PI 3.141592653589793
 

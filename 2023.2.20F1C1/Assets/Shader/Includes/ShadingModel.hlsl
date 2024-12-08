@@ -3,7 +3,6 @@
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-
 #define PI 3.1415926535897932384626433
 #define UNITY_INV_PI 0.31830988618
 #include "Fn_Common.hlsl"
@@ -25,6 +24,7 @@ half3 EnvBRDFApprox(half3 SpecularColor, half Roughness, half NoV)
     return SpecularColor * AB.x + AB.y;
 }
 
+
 // Note: Disney diffuse must be multiply by diffuseAlbedo / PI. This is done outside of this function.
 half DisneyDiffuse_Unity(half NdotV, half NdotL, half LdotH, half perceptualRoughness)
 {
@@ -35,6 +35,7 @@ half DisneyDiffuse_Unity(half NdotV, half NdotL, half LdotH, half perceptualRoug
 
     return lightScatter * viewScatter;
 }
+
 
 inline half3 FresnelTerm_Unity(half3 F0, half cosA)
 {
@@ -65,8 +66,11 @@ inline float SmithJointGGXVisibilityTerm_Unity(float NdotL, float NdotV, float r
     #endif
 }
 
-// ---------------------------------------------------------------------------------------
-// ------------------------------------ UE -----------------------------------------------
+
+float3 F_None_UE4(float3 SpecularColor)
+{
+    return SpecularColor;
+}
 
 // [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
 float3 F_Schlick_UE4(float3 SpecularColor, float VoH)
@@ -76,6 +80,15 @@ float3 F_Schlick_UE4(float3 SpecularColor, float VoH)
 
     // Anything less than 2% is physically impossible and is instead considered to be shadowing
     return saturate(50.0 * SpecularColor.g) * Fc + (1 - Fc) * SpecularColor;
+}
+
+
+// [Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"]
+float Vis_SmithJointAniso(float ax, float ay, float NoV, float NoL, float XoV, float XoL, float YoV, float YoL)
+{
+    float Vis_SmithV = NoL * length(float3(ax * XoV, ay * YoV, NoV));
+    float Vis_SmithL = NoV * length(float3(ax * XoL, ay * YoL, NoL));
+    return 0.5 * rcp(Vis_SmithV + Vis_SmithL);
 }
 
 // Appoximation of joint Smith term for GGX
@@ -88,6 +101,25 @@ float Vis_SmithJointApprox_UE4(float a2, float NoV, float NoL)
     return 0.5 * rcp(Vis_SmithV + Vis_SmithL);
 }
 
+float Vis_Cloth(float NoV, float NoL)
+{
+    return rcp(4 * (NoL + NoV - NoL * NoV));
+}
+
+float Vis_Implicit_UE4()
+{
+    return 0.25;
+}
+
+float D_Charlie_Filament(float roughness, float NoH)
+{
+    // Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
+    float invAlpha = 1.0 / Pow2(roughness);
+    float cos2h = NoH * NoH;
+    float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+    return (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * PI);
+}
+
 // GGX / Trowbridge-Reitz
 // [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
 float D_GGX_UE4(float a2, float NoH)
@@ -96,15 +128,17 @@ float D_GGX_UE4(float a2, float NoH)
     return a2 / (PI * d * d); // 4 mul, 1 rcp
 }
 
-float Vis_Implicit_UE4()
+
+// Anisotropic GGX
+// [Burley 2012, "Physically-Based Shading at Disney"]
+float D_GGXaniso(float ax, float ay, float NoH, float XoH, float YoH)
 {
-    return 0.25;
+    float a2 = ax * ay;
+    float3 V = float3(ay * XoH, ax * YoH, a2 * NoH);
+    float S = dot(V, V);
+    return (1.0f / PI) * a2 * Pow2(a2 / S);
 }
 
-float3 F_None_UE4(float3 SpecularColor)
-{
-    return SpecularColor;
-}
 
 float3 Diffuse_Lambert_UE4(float3 DiffuseColor)
 {

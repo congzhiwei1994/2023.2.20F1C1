@@ -1,5 +1,5 @@
-#ifndef LIGHTING_INCLUDE
-#define LIGHTING_INCLUDE
+#ifndef JEFFORD_LIGHTING_INCLUDE
+#define JEFFORD_LIGHTING_INCLUDE
 
 #include "ShadingModel.hlsl"
 #define UNITY_PI 3.141592653589793
@@ -86,8 +86,8 @@ float3 PBRIndirect(float3 DiffuseColor, float3 SpecularColor, float3 PositionWS,
     float NoV = saturate(abs(dot(N, V)) + 0.001);
 
     float diffuseAO = AOMultiBounce(DiffuseColor, occlusion);
-    float specularAO = AOMultiBounce(SpecularColor, occlusion);
-    specularAO = GetSpecularOcclusion(NoV, Roughness, specularAO);
+    float specularAO = GetSpecularOcclusion(NoV, Roughness, occlusion);
+    specularAO = AOMultiBounce(SpecularColor, specularAO);
 
     float3 diffuse = DiffuseColor * SH * diffuseAO;
     float3 spcular = EnvSpecularDFG(R, SpecularColor, PositionWS, NoV, occlusion, Roughness) * specularAO;
@@ -115,8 +115,9 @@ float3 PBRDirect_UE4(float3 DiffuseColor, float3 SpecularColor, float3 V,
 }
 
 
-float3 StanderdPBRLighting_float(float3 DiffuseColor, float3 SpecularColor, float3 viewWS, float3 positionWS, float3 normalWS,
-                           float roughness, float ao, float EnvRotation)
+float3 StanderdPBRLighting_float(float3 DiffuseColor, float3 SpecularColor, float3 viewWS, float3 positionWS,
+                                 float3 normalWS,
+                                 float roughness, float ao, float EnvRotation)
 {
     float3 sh = SampleSH(normalWS);
     float4 shadowCoord = TransformWorldToShadowCoord(positionWS);
@@ -132,7 +133,7 @@ float3 StanderdPBRLighting_float(float3 DiffuseColor, float3 SpecularColor, floa
 
     float3 color = directLighting + indirectLighting;
 
-    
+
     #if defined(_ADDITIONAL_LIGHTS)
     uint pixelLightCount = GetAdditionalLightsCount();
 
