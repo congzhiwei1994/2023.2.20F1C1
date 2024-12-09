@@ -6,19 +6,9 @@ Shader "Demo/AnisoPBR_ASE"
 	{
 		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
 		[HideInInspector] _EmissionColor("Emission Color", Color) = (1,1,1,1)
-		_DiffuseMap("DiffuseMap", 2D) = "white" {}
-		_NormalMap("NormalMap", 2D) = "bump" {}
-		_NormalScale("NormalScale", Range( 0 , 1)) = 0
-		_NormalAniso("NormalAniso", Range( 0 , 1)) = 0
-		_RoughnessMap("RoughnessMap", 2D) = "white" {}
-		_Roughness("Roughness", Range( 0 , 1)) = 0
-		_Specular("Specular", Range( 0 , 1)) = 0.5
-		_Anisotropy("Anisotropy", Range( -1 , 1)) = 0
-		_EnvRoatrion("EnvRoatrion", Range( 0 , 360)) = 0
-		_HeightMap("HeightMap", 2D) = "white" {}
-		_HeightOffset("HeightOffset", Range( 0 , 1)) = 0
-		_HeightStrength("HeightStrength", Range( 0 , 1)) = 0
-		[HideInInspector] _texcoord( "", 2D ) = "white" {}
+		_DisolveFactor("DisolveFactor", Range( 0 , 1)) = 0
+		_DisolveMap("DisolveMap", 2D) = "black" {}
+		_DisolveColorMap("DisolveColorMap", 2D) = "white" {}
 
 
 		//_TessPhongStrength( "Tess Phong Strength", Range( 0, 1 ) ) = 0.5
@@ -44,7 +34,7 @@ Shader "Demo/AnisoPBR_ASE"
 
 		
 
-		Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" "Queue"="Geometry" "UniversalMaterialType"="Unlit" }
+		Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="TransparentCutout" "Queue"="AlphaTest" "UniversalMaterialType"="Unlit" }
 
 		Cull Back
 		AlphaToMask Off
@@ -180,6 +170,7 @@ Shader "Demo/AnisoPBR_ASE"
 			HLSLPROGRAM
 
 			#pragma shader_feature_local _RECEIVE_SHADOWS_OFF
+			#pragma multi_compile_local _ALPHATEST_ON
 			#define ASE_VERSION 19701
 			#define ASE_SRP_VERSION 160006
 
@@ -217,11 +208,7 @@ Shader "Demo/AnisoPBR_ASE"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
             #endif
 
-			#include "Includes/Fn_ClothLighting.hlsl"
-			#include "Includes/Fn_Common.hlsl"
 			#define ASE_NEEDS_FRAG_WORLD_POSITION
-			#define ASE_NEEDS_VERT_NORMAL
-			#define ASE_NEEDS_FRAG_SCREEN_POSITION
 
 
 			struct VertexInput
@@ -229,7 +216,6 @@ Shader "Demo/AnisoPBR_ASE"
 				float4 positionOS : POSITION;
 				float3 normalOS : NORMAL;
 				float4 ase_texcoord : TEXCOORD0;
-				float4 ase_tangent : TANGENT;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -247,25 +233,13 @@ Shader "Demo/AnisoPBR_ASE"
 					float fogFactor : TEXCOORD3;
 				#endif
 				float4 ase_texcoord4 : TEXCOORD4;
-				float4 ase_texcoord5 : TEXCOORD5;
-				float4 ase_texcoord6 : TEXCOORD6;
-				float4 ase_texcoord7 : TEXCOORD7;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _DiffuseMap_ST;
-			float4 _NormalMap_ST;
-			float4 _RoughnessMap_ST;
-			float _Specular;
-			float _NormalScale;
-			float _HeightOffset;
-			float _HeightStrength;
-			float _NormalAniso;
-			float _Roughness;
-			float _Anisotropy;
-			float _EnvRoatrion;
+			float4 _DisolveMap_ST;
+			float _DisolveFactor;
 			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
@@ -276,19 +250,11 @@ Shader "Demo/AnisoPBR_ASE"
 			#endif
 			CBUFFER_END
 
-			sampler2D _DiffuseMap;
-			sampler2D _NormalMap;
-			sampler2D _HeightMap;
-			sampler2D _RoughnessMap;
+			sampler2D _DisolveColorMap;
+			sampler2D _DisolveMap;
 
 
-			float3 ASESafeNormalize(float3 inVec)
-			{
-				float dp3 = max(1.175494351e-38, dot(inVec, inVec));
-				return inVec* rsqrt(dp3);
-			}
 			
-
 			VertexOutput VertexFunction( VertexInput v  )
 			{
 				VertexOutput o = (VertexOutput)0;
@@ -296,21 +262,10 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-				float3 ase_worldTangent = TransformObjectToWorldDir(v.ase_tangent.xyz);
-				o.ase_texcoord5.xyz = ase_worldTangent;
-				float3 ase_worldNormal = TransformObjectToWorldNormal(v.normalOS);
-				o.ase_texcoord6.xyz = ase_worldNormal;
-				float ase_vertexTangentSign = v.ase_tangent.w * ( unity_WorldTransformParams.w >= 0.0 ? 1.0 : -1.0 );
-				float3 ase_worldBitangent = cross( ase_worldNormal, ase_worldTangent ) * ase_vertexTangentSign;
-				o.ase_texcoord7.xyz = ase_worldBitangent;
-				
 				o.ase_texcoord4.xy = v.ase_texcoord.xy;
 				
 				//setting value to unused interpolator channels and avoid initialization warnings
 				o.ase_texcoord4.zw = 0;
-				o.ase_texcoord5.w = 0;
-				o.ase_texcoord6.w = 0;
-				o.ase_texcoord7.w = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.positionOS.xyz;
@@ -353,7 +308,6 @@ Shader "Demo/AnisoPBR_ASE"
 				float4 vertex : INTERNALTESSPOS;
 				float3 normalOS : NORMAL;
 				float4 ase_texcoord : TEXCOORD0;
-				float4 ase_tangent : TANGENT;
 
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
@@ -372,7 +326,6 @@ Shader "Demo/AnisoPBR_ASE"
 				o.vertex = v.positionOS;
 				o.normalOS = v.normalOS;
 				o.ase_texcoord = v.ase_texcoord;
-				o.ase_tangent = v.ase_tangent;
 				return o;
 			}
 
@@ -412,7 +365,6 @@ Shader "Demo/AnisoPBR_ASE"
 				o.positionOS = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.normalOS = patch[0].normalOS * bary.x + patch[1].normalOS * bary.y + patch[2].normalOS * bary.z;
 				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
-				o.ase_tangent = patch[0].ase_tangent * bary.x + patch[1].ase_tangent * bary.y + patch[2].ase_tangent * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -456,66 +408,14 @@ Shader "Demo/AnisoPBR_ASE"
 					#endif
 				#endif
 
-				float2 uv_DiffuseMap = IN.ase_texcoord4.xy * _DiffuseMap_ST.xy + _DiffuseMap_ST.zw;
-				float3 temp_output_2_0_g12 = tex2D( _DiffuseMap, uv_DiffuseMap ).rgb;
-				float3 DiffuseColor1_g12 = temp_output_2_0_g12;
-				float3 lerpResult28_g12 = lerp( ( _Specular * float3(0.08,0.08,0.08) ) , temp_output_2_0_g12 , 0.0);
-				float3 SpecularColor1_g12 = lerpResult28_g12;
-				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - WorldPosition );
-				float3 ase_viewDirSafeWS = SafeNormalize( ase_viewVectorWS );
-				float3 viewWS1_g12 = ase_viewDirSafeWS;
-				float3 positionWS1_g12 = WorldPosition;
-				float2 uv_NormalMap = IN.ase_texcoord4.xy * _NormalMap_ST.xy + _NormalMap_ST.zw;
-				float3 unpack17 = UnpackNormalScale( tex2D( _NormalMap, uv_NormalMap ), _NormalScale );
-				unpack17.z = lerp( 1, unpack17.z, saturate(_NormalScale) );
-				float2 temp_output_176_0_g13 = float2( 0,0 );
-				float2 break183_g13 = temp_output_176_0_g13;
-				float temp_output_180_0_g13 = ( pow( _HeightOffset , 3.0 ) * 0.1 );
-				float2 appendResult186_g13 = (float2(( break183_g13.x + temp_output_180_0_g13 ) , break183_g13.y));
-				float4 tex2DNode189_g13 = tex2D( _HeightMap, temp_output_176_0_g13 );
-				float temp_output_178_0_g13 = _HeightStrength;
-				float3 appendResult200_g13 = (float3(1.0 , 0.0 , ( ( tex2D( _HeightMap, appendResult186_g13 ).r - tex2DNode189_g13.r ) * temp_output_178_0_g13 )));
-				float2 break185_g13 = temp_output_176_0_g13;
-				float2 appendResult188_g13 = (float2(break185_g13.x , ( temp_output_180_0_g13 + break185_g13.y )));
-				float3 appendResult201_g13 = (float3(0.0 , 1.0 , ( temp_output_178_0_g13 * ( tex2D( _HeightMap, appendResult188_g13 ).r - tex2DNode189_g13.r ) )));
-				float3 normalizeResult199_g13 = normalize( cross( appendResult200_g13 , appendResult201_g13 ) );
-				float3 HeightNormalTS71 = normalizeResult199_g13;
-				float3 NormalTS34 = BlendNormal( unpack17 , HeightNormalTS71 );
-				float3 ase_worldTangent = IN.ase_texcoord5.xyz;
-				float3 ase_worldNormal = IN.ase_texcoord6.xyz;
-				float3 ase_worldBitangent = IN.ase_texcoord7.xyz;
-				float3x3 ase_tangentToWorldFast = float3x3(ase_worldTangent.x,ase_worldBitangent.x,ase_worldNormal.x,ase_worldTangent.y,ase_worldBitangent.y,ase_worldNormal.y,ase_worldTangent.z,ase_worldBitangent.z,ase_worldNormal.z);
-				float3 tangentToWorldDir6_g12 = normalize( mul( ase_tangentToWorldFast, NormalTS34 ) );
-				float3 normalWS1_g12 = tangentToWorldDir6_g12;
-				float3 _Vector1 = float3(0,0,1);
-				float3 normalizeResult50 = normalize( ( float3(1,0,0) + ( (NormalTS34).x * _Vector1 * _NormalAniso ) ) );
-				float3 Tangent52 = normalizeResult50;
-				float3 tangentToWorldDir26_g12 = ASESafeNormalize( mul( ase_tangentToWorldFast, Tangent52 ) );
-				float3 TangentWS1_g12 = tangentToWorldDir26_g12;
-				float3 normalizeResult51 = normalize( ( ( _NormalAniso * _Vector1 * (NormalTS34).y ) + float3(0,1,0) ) );
-				float3 BTangent53 = normalizeResult51;
-				float3 tangentToWorldDir27_g12 = ASESafeNormalize( mul( ase_tangentToWorldFast, BTangent53 ) );
-				float3 BTangentWS1_g12 = tangentToWorldDir27_g12;
-				float2 uv_RoughnessMap = IN.ase_texcoord4.xy * _RoughnessMap_ST.xy + _RoughnessMap_ST.zw;
-				float Roughness27 = ( tex2D( _RoughnessMap, uv_RoughnessMap ).r * _Roughness );
-				float clampResult19_g12 = clamp( Roughness27 , 0.1 , 1.0 );
-				float roughness1_g12 = clampResult19_g12;
-				float Anisotropy1_g12 = _Anisotropy;
-				float localGetSSAO1_g7 = ( 0.0 );
-				float4 ase_screenPosNorm = ScreenPos / ScreenPos.w;
-				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
-				float2 ScreenUV1_g7 = (ase_screenPosNorm).xy;
-				float SSAO1_g7 = 0.0;
-				GetSSAO_float( ScreenUV1_g7 , SSAO1_g7 );
-				float ao1_g12 = SSAO1_g7;
-				float EnvRotation1_g12 = _EnvRoatrion;
-				float3 localAnisoLighting_float1_g12 = AnisoLighting_float( DiffuseColor1_g12 , SpecularColor1_g12 , viewWS1_g12 , positionWS1_g12 , normalWS1_g12 , TangentWS1_g12 , BTangentWS1_g12 , roughness1_g12 , Anisotropy1_g12 , ao1_g12 , EnvRotation1_g12 );
-				float3 clampResult76 = clamp( localAnisoLighting_float1_g12 , float3( 0,0,0 ) , float3( 1.8,1.8,1.8 ) );
+				float2 uv_DisolveMap = IN.ase_texcoord4.xy * _DisolveMap_ST.xy + _DisolveMap_ST.zw;
+				float temp_output_84_0 = saturate( ( ( ( WorldPosition.y - _DisolveFactor ) / _DisolveFactor ) - tex2D( _DisolveMap, uv_DisolveMap ).r ) );
+				float2 temp_cast_0 = (temp_output_84_0).xx;
 				
 				float3 BakedAlbedo = 0;
 				float3 BakedEmission = 0;
-				float3 Color = clampResult76;
-				float Alpha = 1;
+				float3 Color = tex2D( _DisolveColorMap, temp_cast_0 ).rgb;
+				float Alpha = temp_output_84_0;
 				float AlphaClipThreshold = 0.5;
 				float AlphaClipThresholdShadow = 0.5;
 
@@ -559,6 +459,7 @@ Shader "Demo/AnisoPBR_ASE"
 
 			HLSLPROGRAM
 
+			#pragma multi_compile_local _ALPHATEST_ON
 			#define ASE_VERSION 19701
 			#define ASE_SRP_VERSION 160006
 
@@ -580,13 +481,14 @@ Shader "Demo/AnisoPBR_ASE"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
             #endif
 
-			
+			#define ASE_NEEDS_FRAG_WORLD_POSITION
+
 
 			struct VertexInput
 			{
 				float4 positionOS : POSITION;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -599,23 +501,14 @@ Shader "Demo/AnisoPBR_ASE"
 				#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR) && defined(ASE_NEEDS_FRAG_SHADOWCOORDS)
 					float4 shadowCoord : TEXCOORD1;
 				#endif
-				
+				float4 ase_texcoord2 : TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _DiffuseMap_ST;
-			float4 _NormalMap_ST;
-			float4 _RoughnessMap_ST;
-			float _Specular;
-			float _NormalScale;
-			float _HeightOffset;
-			float _HeightStrength;
-			float _NormalAniso;
-			float _Roughness;
-			float _Anisotropy;
-			float _EnvRoatrion;
+			float4 _DisolveMap_ST;
+			float _DisolveFactor;
 			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
@@ -626,7 +519,8 @@ Shader "Demo/AnisoPBR_ASE"
 			#endif
 			CBUFFER_END
 
-			
+			sampler2D _DisolveMap;
+
 
 			
 			float3 _LightDirection;
@@ -639,7 +533,10 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				o.ase_texcoord2.xy = v.ase_texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord2.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.positionOS.xyz;
@@ -696,7 +593,8 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -713,7 +611,7 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.positionOS;
 				o.normalOS = v.normalOS;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -752,7 +650,7 @@ Shader "Demo/AnisoPBR_ASE"
 				VertexInput o = (VertexInput) 0;
 				o.positionOS = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.normalOS = patch[0].normalOS * bary.x + patch[1].normalOS * bary.y + patch[2].normalOS * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -789,9 +687,11 @@ Shader "Demo/AnisoPBR_ASE"
 					#endif
 				#endif
 
+				float2 uv_DisolveMap = IN.ase_texcoord2.xy * _DisolveMap_ST.xy + _DisolveMap_ST.zw;
+				float temp_output_84_0 = saturate( ( ( ( WorldPosition.y - _DisolveFactor ) / _DisolveFactor ) - tex2D( _DisolveMap, uv_DisolveMap ).r ) );
 				
 
-				float Alpha = 1;
+				float Alpha = temp_output_84_0;
 				float AlphaClipThreshold = 0.5;
 				float AlphaClipThresholdShadow = 0.5;
 
@@ -825,6 +725,7 @@ Shader "Demo/AnisoPBR_ASE"
 
 			HLSLPROGRAM
 
+			#pragma multi_compile_local _ALPHATEST_ON
 			#define ASE_VERSION 19701
 			#define ASE_SRP_VERSION 160006
 
@@ -842,13 +743,14 @@ Shader "Demo/AnisoPBR_ASE"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
             #endif
 
-			
+			#define ASE_NEEDS_FRAG_WORLD_POSITION
+
 
 			struct VertexInput
 			{
 				float4 positionOS : POSITION;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -862,23 +764,14 @@ Shader "Demo/AnisoPBR_ASE"
 				#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR) && defined(ASE_NEEDS_FRAG_SHADOWCOORDS)
 				float4 shadowCoord : TEXCOORD2;
 				#endif
-				
+				float4 ase_texcoord3 : TEXCOORD3;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _DiffuseMap_ST;
-			float4 _NormalMap_ST;
-			float4 _RoughnessMap_ST;
-			float _Specular;
-			float _NormalScale;
-			float _HeightOffset;
-			float _HeightStrength;
-			float _NormalAniso;
-			float _Roughness;
-			float _Anisotropy;
-			float _EnvRoatrion;
+			float4 _DisolveMap_ST;
+			float _DisolveFactor;
 			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
@@ -889,7 +782,8 @@ Shader "Demo/AnisoPBR_ASE"
 			#endif
 			CBUFFER_END
 
-			
+			sampler2D _DisolveMap;
+
 
 			
 			VertexOutput VertexFunction( VertexInput v  )
@@ -899,7 +793,10 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				o.ase_texcoord3.xy = v.ase_texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord3.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.positionOS.xyz;
@@ -937,7 +834,8 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -954,7 +852,7 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.positionOS;
 				o.normalOS = v.normalOS;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -993,7 +891,7 @@ Shader "Demo/AnisoPBR_ASE"
 				VertexInput o = (VertexInput) 0;
 				o.positionOS = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.normalOS = patch[0].normalOS * bary.x + patch[1].normalOS * bary.y + patch[2].normalOS * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1033,9 +931,11 @@ Shader "Demo/AnisoPBR_ASE"
 					#endif
 				#endif
 
+				float2 uv_DisolveMap = IN.ase_texcoord3.xy * _DisolveMap_ST.xy + _DisolveMap_ST.zw;
+				float temp_output_84_0 = saturate( ( ( ( WorldPosition.y - _DisolveFactor ) / _DisolveFactor ) - tex2D( _DisolveMap, uv_DisolveMap ).r ) );
 				
 
-				float Alpha = 1;
+				float Alpha = temp_output_84_0;
 				float AlphaClipThreshold = 0.5;
 
 				#ifdef _ALPHATEST_ON
@@ -1062,6 +962,7 @@ Shader "Demo/AnisoPBR_ASE"
 
 			HLSLPROGRAM
 
+			#pragma multi_compile_local _ALPHATEST_ON
 			#define ASE_VERSION 19701
 			#define ASE_SRP_VERSION 160006
 
@@ -1090,30 +991,22 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				float4 positionOS : POSITION;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct VertexOutput
 			{
 				float4 positionCS : SV_POSITION;
-				
+				float4 ase_texcoord : TEXCOORD0;
+				float4 ase_texcoord1 : TEXCOORD1;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _DiffuseMap_ST;
-			float4 _NormalMap_ST;
-			float4 _RoughnessMap_ST;
-			float _Specular;
-			float _NormalScale;
-			float _HeightOffset;
-			float _HeightStrength;
-			float _NormalAniso;
-			float _Roughness;
-			float _Anisotropy;
-			float _EnvRoatrion;
+			float4 _DisolveMap_ST;
+			float _DisolveFactor;
 			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
@@ -1124,7 +1017,8 @@ Shader "Demo/AnisoPBR_ASE"
 			#endif
 			CBUFFER_END
 
-			
+			sampler2D _DisolveMap;
+
 
 			
 			int _ObjectId;
@@ -1145,7 +1039,14 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float3 ase_worldPos = TransformObjectToWorld( (v.positionOS).xyz );
+				o.ase_texcoord.xyz = ase_worldPos;
 				
+				o.ase_texcoord1.xy = v.ase_texcoord.xy;
+				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord.w = 0;
+				o.ase_texcoord1.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.positionOS.xyz;
@@ -1175,7 +1076,8 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1192,7 +1094,7 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.positionOS;
 				o.normalOS = v.normalOS;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1231,7 +1133,7 @@ Shader "Demo/AnisoPBR_ASE"
 				VertexInput o = (VertexInput) 0;
 				o.positionOS = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.normalOS = patch[0].normalOS * bary.x + patch[1].normalOS * bary.y + patch[2].normalOS * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1253,9 +1155,12 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				SurfaceDescription surfaceDescription = (SurfaceDescription)0;
 
+				float3 ase_worldPos = IN.ase_texcoord.xyz;
+				float2 uv_DisolveMap = IN.ase_texcoord1.xy * _DisolveMap_ST.xy + _DisolveMap_ST.zw;
+				float temp_output_84_0 = saturate( ( ( ( ase_worldPos.y - _DisolveFactor ) / _DisolveFactor ) - tex2D( _DisolveMap, uv_DisolveMap ).r ) );
 				
 
-				surfaceDescription.Alpha = 1;
+				surfaceDescription.Alpha = temp_output_84_0;
 				surfaceDescription.AlphaClipThreshold = 0.5;
 
 				#if _ALPHATEST_ON
@@ -1283,6 +1188,7 @@ Shader "Demo/AnisoPBR_ASE"
 
 			HLSLPROGRAM
 
+			#pragma multi_compile_local _ALPHATEST_ON
 			#define ASE_VERSION 19701
 			#define ASE_SRP_VERSION 160006
 
@@ -1316,30 +1222,22 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				float4 positionOS : POSITION;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct VertexOutput
 			{
 				float4 positionCS : SV_POSITION;
-				
+				float4 ase_texcoord : TEXCOORD0;
+				float4 ase_texcoord1 : TEXCOORD1;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _DiffuseMap_ST;
-			float4 _NormalMap_ST;
-			float4 _RoughnessMap_ST;
-			float _Specular;
-			float _NormalScale;
-			float _HeightOffset;
-			float _HeightStrength;
-			float _NormalAniso;
-			float _Roughness;
-			float _Anisotropy;
-			float _EnvRoatrion;
+			float4 _DisolveMap_ST;
+			float _DisolveFactor;
 			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
@@ -1350,7 +1248,8 @@ Shader "Demo/AnisoPBR_ASE"
 			#endif
 			CBUFFER_END
 
-			
+			sampler2D _DisolveMap;
+
 
 			
 			float4 _SelectionID;
@@ -1370,7 +1269,14 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float3 ase_worldPos = TransformObjectToWorld( (v.positionOS).xyz );
+				o.ase_texcoord.xyz = ase_worldPos;
 				
+				o.ase_texcoord1.xy = v.ase_texcoord.xy;
+				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord.w = 0;
+				o.ase_texcoord1.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.positionOS.xyz;
@@ -1398,7 +1304,8 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1415,7 +1322,7 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.positionOS;
 				o.normalOS = v.normalOS;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1454,7 +1361,7 @@ Shader "Demo/AnisoPBR_ASE"
 				VertexInput o = (VertexInput) 0;
 				o.positionOS = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.normalOS = patch[0].normalOS * bary.x + patch[1].normalOS * bary.y + patch[2].normalOS * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1476,9 +1383,12 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				SurfaceDescription surfaceDescription = (SurfaceDescription)0;
 
+				float3 ase_worldPos = IN.ase_texcoord.xyz;
+				float2 uv_DisolveMap = IN.ase_texcoord1.xy * _DisolveMap_ST.xy + _DisolveMap_ST.zw;
+				float temp_output_84_0 = saturate( ( ( ( ase_worldPos.y - _DisolveFactor ) / _DisolveFactor ) - tex2D( _DisolveMap, uv_DisolveMap ).r ) );
 				
 
-				surfaceDescription.Alpha = 1;
+				surfaceDescription.Alpha = temp_output_84_0;
 				surfaceDescription.AlphaClipThreshold = 0.5;
 
 				#if _ALPHATEST_ON
@@ -1510,6 +1420,7 @@ Shader "Demo/AnisoPBR_ASE"
 
 			HLSLPROGRAM
 
+        	#pragma multi_compile_local _ALPHATEST_ON
         	#define ASE_VERSION 19701
         	#define ASE_SRP_VERSION 160006
 
@@ -1546,7 +1457,7 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				float4 positionOS : POSITION;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1555,23 +1466,15 @@ Shader "Demo/AnisoPBR_ASE"
 				float4 positionCS : SV_POSITION;
 				float4 clipPosV : TEXCOORD0;
 				float3 normalWS : TEXCOORD1;
-				
+				float4 ase_texcoord2 : TEXCOORD2;
+				float4 ase_texcoord3 : TEXCOORD3;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _DiffuseMap_ST;
-			float4 _NormalMap_ST;
-			float4 _RoughnessMap_ST;
-			float _Specular;
-			float _NormalScale;
-			float _HeightOffset;
-			float _HeightStrength;
-			float _NormalAniso;
-			float _Roughness;
-			float _Anisotropy;
-			float _EnvRoatrion;
+			float4 _DisolveMap_ST;
+			float _DisolveFactor;
 			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
@@ -1582,7 +1485,8 @@ Shader "Demo/AnisoPBR_ASE"
 			#endif
 			CBUFFER_END
 
-			
+			sampler2D _DisolveMap;
+
 
 			
 			struct SurfaceDescription
@@ -1600,7 +1504,14 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float3 ase_worldPos = TransformObjectToWorld( (v.positionOS).xyz );
+				o.ase_texcoord2.xyz = ase_worldPos;
 				
+				o.ase_texcoord3.xy = v.ase_texcoord.xy;
+				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord2.w = 0;
+				o.ase_texcoord3.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.positionOS.xyz;
@@ -1631,7 +1542,8 @@ Shader "Demo/AnisoPBR_ASE"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 normalOS : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1648,7 +1560,7 @@ Shader "Demo/AnisoPBR_ASE"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.positionOS;
 				o.normalOS = v.normalOS;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1687,7 +1599,7 @@ Shader "Demo/AnisoPBR_ASE"
 				VertexInput o = (VertexInput) 0;
 				o.positionOS = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.normalOS = patch[0].normalOS * bary.x + patch[1].normalOS * bary.y + patch[2].normalOS * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1715,9 +1627,12 @@ Shader "Demo/AnisoPBR_ASE"
 				float4 ClipPos = IN.clipPosV;
 				float4 ScreenPos = ComputeScreenPos( IN.clipPosV );
 
+				float3 ase_worldPos = IN.ase_texcoord2.xyz;
+				float2 uv_DisolveMap = IN.ase_texcoord3.xy * _DisolveMap_ST.xy + _DisolveMap_ST.zw;
+				float temp_output_84_0 = saturate( ( ( ( ase_worldPos.y - _DisolveFactor ) / _DisolveFactor ) - tex2D( _DisolveMap, uv_DisolveMap ).r ) );
 				
 
-				float Alpha = 1;
+				float Alpha = temp_output_84_0;
 				float AlphaClipThreshold = 0.5;
 
 				#if _ALPHATEST_ON
@@ -1758,13 +1673,20 @@ Shader "Demo/AnisoPBR_ASE"
 }
 /*ASEBEGIN
 Version=19701
+Node;AmplifyShaderEditor.RangedFloatNode;78;128,944;Inherit;False;Property;_DisolveFactor;DisolveFactor;12;0;Create;True;0;0;0;False;0;False;0;0;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.WorldPosInputsNode;77;224,784;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
+Node;AmplifyShaderEditor.SimpleSubtractOpNode;79;448,896;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.TextureCoordinatesNode;82;0,1200;Inherit;False;0;81;2;3;2;SAMPLER2D;;False;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;5;FLOAT2;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;81;256,1184;Inherit;True;Property;_DisolveMap;DisolveMap;13;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;black;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
+Node;AmplifyShaderEditor.SimpleDivideOpNode;83;560,1056;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.CommentaryNode;72;-2800,160;Inherit;False;1076;564.95;HeightNormalTS;5;71;70;69;68;63;HeightNormalTS;1,1,1,1;0;0
 Node;AmplifyShaderEditor.CommentaryNode;35;-2840,784;Inherit;False;1780.607;1188.635;Noirmal;22;53;52;50;51;39;49;48;38;44;47;46;42;45;36;43;37;41;34;17;18;73;74;Noirmal;1,1,1,1;0;0
-Node;AmplifyShaderEditor.CommentaryNode;28;-1008,832;Inherit;False;772;370.95;Roughness;4;19;20;21;27;Roughness;1,1,1,1;0;0
-Node;AmplifyShaderEditor.SamplerNode;19;-960,880;Inherit;True;Property;_RoughnessMap;RoughnessMap;4;0;Create;True;0;0;0;False;0;False;-1;None;3dcd08d3e0dc87c43a5ee5258dc4f8ac;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;20;-640,896;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;21;-960,1088;Inherit;False;Property;_Roughness;Roughness;5;0;Create;True;0;0;0;False;0;False;0;0.246;0;1;0;1;FLOAT;0
-Node;AmplifyShaderEditor.RegisterLocalVarNode;27;-480,896;Inherit;False;Roughness;-1;True;1;0;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.CommentaryNode;28;-2176,2112;Inherit;False;772;370.95;Roughness;4;19;20;21;27;Roughness;1,1,1,1;0;0
+Node;AmplifyShaderEditor.SimpleSubtractOpNode;80;720,1120;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.SamplerNode;19;-2128,2160;Inherit;True;Property;_RoughnessMap;RoughnessMap;4;0;Create;True;0;0;0;False;0;False;-1;None;3dcd08d3e0dc87c43a5ee5258dc4f8ac;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;20;-1808,2176;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;21;-2128,2368;Inherit;False;Property;_Roughness;Roughness;5;0;Create;True;0;0;0;False;0;False;0;0.246;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RegisterLocalVarNode;27;-1648,2176;Inherit;False;Roughness;-1;True;1;0;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;30;-912,384;Inherit;False;Property;_Anisotropy;Anisotropy;7;0;Create;True;0;0;0;False;0;False;0;-0.54;-1;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.FunctionNode;22;-752,480;Inherit;False;GetSSAO;-1;;7;8d5e9aa9b7861bd48aa5b5f4271a5ac5;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;23;-800,576;Inherit;False;Property;_EnvRoatrion;EnvRoatrion;8;0;Create;True;0;0;0;False;0;False;0;0;0;360;0;1;FLOAT;0
@@ -1802,7 +1724,10 @@ Node;AmplifyShaderEditor.RegisterLocalVarNode;71;-1952,352;Inherit;False;HeightN
 Node;AmplifyShaderEditor.BlendNormalsNode;73;-1696,960;Inherit;False;0;3;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.GetLocalVarNode;74;-2080,1136;Inherit;False;71;HeightNormalTS;1;0;OBJECT;;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.RegisterLocalVarNode;34;-1408,976;Inherit;False;NormalTS;-1;True;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
-Node;AmplifyShaderEditor.ClampOpNode;76;144,48;Inherit;False;3;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;1.8,1.8,1.8;False;1;FLOAT3;0
+Node;AmplifyShaderEditor.ClampOpNode;76;80,-80;Inherit;False;3;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;1.8,1.8,1.8;False;1;FLOAT3;0
+Node;AmplifyShaderEditor.RangedFloatNode;85;1200,1312;Inherit;False;Constant;_Float1;Float 1;14;0;Create;True;0;0;0;False;0;False;0.5;0;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.SaturateNode;84;928,1088;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.SamplerNode;86;1088,912;Inherit;True;Property;_DisolveColorMap;DisolveColorMap;14;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;0;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphUnlitGUI;0;1;New Amplify Shader;2992e84f91cbeb14eab234972e07ea9d;True;ExtraPrePass;0;0;ExtraPrePass;5;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;False;False;False;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Unlit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;0;False;False;0;;0;0;Standard;0;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;2;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphUnlitGUI;0;1;New Amplify Shader;2992e84f91cbeb14eab234972e07ea9d;True;ShadowCaster;0;2;ShadowCaster;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;False;False;False;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Unlit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;True;False;False;False;False;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;False;True;1;LightMode=ShadowCaster;False;False;0;;0;0;Standard;0;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;3;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphUnlitGUI;0;1;New Amplify Shader;2992e84f91cbeb14eab234972e07ea9d;True;DepthOnly;0;3;DepthOnly;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;False;False;False;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Unlit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;True;False;False;False;False;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;False;False;True;1;LightMode=DepthOnly;False;False;0;;0;0;Standard;0;False;0
@@ -1812,7 +1737,14 @@ Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;6;0,0;Float;False;False;-1;
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;7;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphUnlitGUI;0;1;New Amplify Shader;2992e84f91cbeb14eab234972e07ea9d;True;ScenePickingPass;0;7;ScenePickingPass;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;False;False;False;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Unlit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;LightMode=Picking;False;False;0;;0;0;Standard;0;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;8;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphUnlitGUI;0;1;New Amplify Shader;2992e84f91cbeb14eab234972e07ea9d;True;DepthNormals;0;8;DepthNormals;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;False;False;False;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Unlit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;False;True;1;LightMode=DepthNormalsOnly;False;False;0;;0;0;Standard;0;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;9;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphUnlitGUI;0;1;New Amplify Shader;2992e84f91cbeb14eab234972e07ea9d;True;DepthNormalsOnly;0;9;DepthNormalsOnly;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;False;False;False;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Unlit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;False;True;1;LightMode=DepthNormalsOnly;False;True;9;d3d11;metal;vulkan;xboxone;xboxseries;playstation;ps4;ps5;switch;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;1;368,-80;Float;False;True;-1;2;ASEMaterialInspector;0;13;Demo/AnisoPBR_ASE;2992e84f91cbeb14eab234972e07ea9d;True;Forward;0;1;Forward;8;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;False;False;False;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Unlit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForwardOnly;False;False;0;;0;0;Standard;23;Surface;0;0;  Blend;0;0;Two Sided;1;0;Forward Only;0;0;Alpha Clipping;0;638691034082933987;  Use Shadow Threshold;0;0;Cast Shadows;1;0;Receive Shadows;1;0;GPU Instancing;0;638691034117943469;LOD CrossFade;0;638691034123219266;Built-in Fog;0;638691034127420339;Meta Pass;0;0;Extra Pre Pass;0;0;Tessellation;0;0;  Phong;0;0;  Strength;0.5,False,;0;  Type;0;0;  Tess;16,False,;0;  Min;10,False,;0;  Max;25,False,;0;  Edge Length;16,False,;0;  Max Displacement;25,False,;0;Vertex Position,InvertActionOnDeselection;1;0;0;10;False;True;True;True;False;False;True;True;True;False;False;;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;1;1392,1072;Float;False;True;-1;2;ASEMaterialInspector;0;13;Demo/AnisoPBR_ASE;2992e84f91cbeb14eab234972e07ea9d;True;Forward;0;1;Forward;8;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;False;False;False;True;4;RenderPipeline=UniversalPipeline;RenderType=TransparentCutout=RenderType;Queue=AlphaTest=Queue=0;UniversalMaterialType=Unlit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForwardOnly;False;False;0;;0;0;Standard;23;Surface;0;0;  Blend;0;0;Two Sided;1;0;Forward Only;0;0;Alpha Clipping;1;638693642317401516;  Use Shadow Threshold;0;0;Cast Shadows;1;0;Receive Shadows;1;0;GPU Instancing;0;638691034117943469;LOD CrossFade;0;638691034123219266;Built-in Fog;0;638691034127420339;Meta Pass;0;0;Extra Pre Pass;0;0;Tessellation;0;0;  Phong;0;0;  Strength;0.5,False,;0;  Type;0;0;  Tess;16,False,;0;  Min;10,False,;0;  Max;25,False,;0;  Edge Length;16,False,;0;  Max Displacement;25,False,;0;Vertex Position,InvertActionOnDeselection;1;0;0;10;False;True;True;True;False;False;True;True;True;False;False;;False;0
+WireConnection;79;0;77;2
+WireConnection;79;1;78;0
+WireConnection;81;1;82;0
+WireConnection;83;0;79;0
+WireConnection;83;1;78;0
+WireConnection;80;0;83;0
+WireConnection;80;1;81;1
 WireConnection;20;0;19;1
 WireConnection;20;1;21;0
 WireConnection;27;0;20;0
@@ -1852,6 +1784,10 @@ WireConnection;73;0;17;0
 WireConnection;73;1;74;0
 WireConnection;34;0;73;0
 WireConnection;76;0;62;0
-WireConnection;1;2;76;0
+WireConnection;84;0;80;0
+WireConnection;86;1;84;0
+WireConnection;1;2;86;5
+WireConnection;1;3;84;0
+WireConnection;1;4;85;0
 ASEEND*/
-//CHKSM=A4CE4D5024A7FA7A233C8580D83445BF883FD576
+//CHKSM=97171B4E18C000F9EF67A285E1BD7BF8F2017803
