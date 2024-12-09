@@ -438,7 +438,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6076828562810801015, guid: e66dd0460e522e74ead3de7ebf81aa6a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6212412471005395330, guid: e66dd0460e522e74ead3de7ebf81aa6a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -578,79 +578,6 @@ Transform:
   - {fileID: 1173947724}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &662917980
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0.000000021855694
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_Name
-      value: ShirleyLee_Fixed _Humanoid
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_Avatar
-      value: 
-      objectReference: {fileID: 9000000, guid: 0fecf1c71742baf4782fd2e23adede6a, type: 2}
-    - target: {fileID: 5866666021909216657, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: c6dc05697fb45ce4fa76332644c372f6, type: 2}
-    - target: {fileID: 5866666021909216657, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
-      propertyPath: m_WarningMessage
-      value: 
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d7852fe5c20e33646811549efc0b1d51, type: 3}
 --- !u!1 &765997863
 GameObject:
   m_ObjectHideFlags: 0
@@ -1454,7 +1381,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3159812266073746058, guid: 7c9a2648b5d75ab4e9093f30a0f65c09, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6729192745709940081, guid: 7c9a2648b5d75ab4e9093f30a0f65c09, type: 3}
       propertyPath: m_Enabled
@@ -2289,4 +2216,3 @@ SceneRoots:
   - {fileID: 370146109}
   - {fileID: 1328347493}
   - {fileID: 519986623}
-  - {fileID: 662917980}
