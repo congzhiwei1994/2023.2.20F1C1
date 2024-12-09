@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using MagicaCloth;
 public class UpdateSkinnedMeshWindow : EditorWindow
 {
-    [MenuItem("美术/Skinned Mesh Tools", false, 7001)]
+    [MenuItem("Tools/Skinned Mesh Tools", false, 7001)]
     public static void OpenWindow()
     {
         var window = GetWindow<UpdateSkinnedMeshWindow>();
