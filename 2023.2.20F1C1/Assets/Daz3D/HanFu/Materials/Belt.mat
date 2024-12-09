@@ -40,6 +40,14 @@ Material:
         m_Texture: {fileID: 2800000, guid: 8a6938963650f434ab48460fa3d24224, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DisolveColorMap:
+        m_Texture: {fileID: 2800000, guid: 829b492d9d3d4d34b9a3d5b42741eefa, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DisolveMap:
+        m_Texture: {fileID: 2800000, guid: 82571c0dac1bef642ab40208427dd473, type: 3}
+        m_Scale: {x: 30, y: 30}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -133,6 +141,7 @@ Material:
     - _AlphaClipThreshold: 0.5
     - _AlphaCutoff: 0.5
     - _Anisotropy: -0.54
+    - _DisolveFactor: 0
     - _DualLobeSpecularRatio: 0
     - _DualLobeSpecularWeight: 0
     - _EmissionExposureWeight: 1
