@@ -559,7 +559,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &370146109
 Transform:
   m_ObjectHideFlags: 0
@@ -588,12 +588,12 @@ GameObject:
   - component: {fileID: 519986623}
   - component: {fileID: 519986624}
   m_Layer: 0
-  m_Name: _ShirleyLee
+  m_Name: Character Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &519986623
 Transform:
   m_ObjectHideFlags: 0
@@ -607,9 +607,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1173947724}
   - {fileID: 9029491533045667994}
   - {fileID: 2046420254}
-  - {fileID: 1173947724}
   - {fileID: 676316690}
   - {fileID: 1049637140}
   - {fileID: 2128061218}
