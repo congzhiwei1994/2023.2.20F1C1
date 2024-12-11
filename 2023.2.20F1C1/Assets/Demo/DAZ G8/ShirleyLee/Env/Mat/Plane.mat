@@ -70,7 +70,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _WaterNormal:
         m_Texture: {fileID: 2800000, guid: 7d5deec2fd7ca0f4faf04bae9e5f0b04, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 20, y: 20}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
@@ -119,8 +119,8 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
-    - _WaterDir_X: 0.179
-    - _WaterDir_Z: 0.179
+    - _WaterDir_X: 0.3
+    - _WaterDir_Z: -0.05
     - _WaterNormalTilling_A: 1
     - _WaterNormalTilling_B: 0.691
     - _WorkflowMode: 1
