@@ -2830,6 +2830,7 @@ GameObject:
   - component: {fileID: 9014869053175836138}
   - component: {fileID: 1655765633338860096}
   - component: {fileID: 194955736824723700}
+  - component: {fileID: 1626014998598752101}
   m_Layer: 0
   m_Name: Hairt_Humanoid
   m_TagString: Untagged
@@ -2845,7 +2846,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4365741231622947511}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.000000021855694, y: 0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2887,6 +2888,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e57d384df8c7624bb0dfad5adce4112, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1626014998598752101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4365741231622947511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f31e21055d6214fa598c6951d55c45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 0}
 --- !u!1 &4460897180672144561
 GameObject:
   m_ObjectHideFlags: 0
