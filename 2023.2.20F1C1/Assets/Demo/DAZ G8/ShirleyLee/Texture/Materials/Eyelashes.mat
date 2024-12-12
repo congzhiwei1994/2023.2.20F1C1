@@ -13,20 +13,17 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
-  - IRAYUBER_DUALLOBESPECULARREFLECTIVITYACTIVE
-  - _BLENDMODE_ALPHA
-  - _DOUBLESIDED_ON
-  - _ENABLE_FOG_ON_TRANSPARENT
+  - _ALPHAPREMULTIPLY_ON
   - _SURFACE_TYPE_TRANSPARENT
-  m_LightmapFlags: 6
+  m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 1
+  m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    MotionVector: User
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
-  - TransparentBackface
+  - DepthOnly
+  - SHADOWCASTER
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -36,46 +33,74 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AlphaMap:
-        m_Texture: {fileID: 2800000, guid: ee8262eb3a9f32048a1838a4f1836e8c, type: 3}
+        m_Texture: {fileID: 2800000, guid: 12f679a218ff4674984575b86073ae1b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: ee8262eb3a9f32048a1838a4f1836e8c, type: 3}
+        m_Texture: {fileID: 2800000, guid: 12f679a218ff4674984575b86073ae1b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _CutoutOpacityMap:
-        m_Texture: {fileID: 2800000, guid: ee8262eb3a9f32048a1838a4f1836e8c, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DiffuseMap:
+    - _BumpMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _GlossyRoughnessMap:
+    - _DetailAlbedoMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _HairCap:
-        m_Texture: {fileID: 2800000, guid: ee8262eb3a9f32048a1838a4f1836e8c, type: 3}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _HeightMap:
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: ab90ac2c48d9ab14db8505a5583b724e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _SpecularMap:
+    - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _texcoord:
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SSSLUTMAP:
+        m_Texture: {fileID: 2800000, guid: 8b63aa19566dab140a27a764eb5135a0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecularMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -93,37 +118,62 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - ROUGHNESS_IS_SMOOTHNESS: 0
     - _AO: 1
-    - _AlphaClip: 0.3
-    - _AlphaClipThreshold: 0.8
-    - _AlphaCutoff: 0.5
-    - _AlphaOffset: 0.25
-    - _AlphaPower: 1
-    - _AlphaStrength: 1.2
-    - _ClipOff: 1
-    - _DiffuseMultiplier: 1.5
-    - _EnvRotation: 90
-    - _GlossyRoughness: 0.139241
-    - _Height: 1
-    - _HeightOffset: 0.25
+    - _AddPrecomputedVelocity: 0
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 1
+    - _BumpScale: 1
+    - _ClearCoatMask: 0
+    - _ClearCoatSmoothness: 0
+    - _ClipOff: 0.662
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DetailAlbedoMapScale: 1
+    - _DetailNormalMapScale: 1
+    - _DetailNormalScale: 1
+    - _DetailNormalTilling: 5
+    - _DstBlend: 10
+    - _DstBlendAlpha: 10
+    - _EnvRotation: 333
+    - _EnvironmentReflections: 1
+    - _GlossMapScale: 1
+    - _Glossiness: 0.44721356
+    - _GlossyReflections: 1
+    - _Lobe0Roughness: 0.5
+    - _Lobe1Roughness: 0.5
+    - _LobeMix: 0.85
+    - _Metallic: 0
+    - _Mode: 3
     - _NoiseIntensity: 0
-    - _NormalStrength: 0.5
-    - _QueueControl: 1
+    - _NormalScale: 1
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Roughness: 0
-    - _Scatter: 0.302
-    - _Specular: 0.177
+    - _Roughness: 0.255
+    - _SSSPower: 5
+    - _SSSRange: 0.5
+    - _Scatter: 0.225
+    - _Smoothness: 0.44721356
+    - _SmoothnessTextureChannel: 0
+    - _Specular: 0.225
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 1
+    - _UVSec: 0
+    - _WorkflowMode: 1
+    - _ZWrite: 0
     m_Colors:
-    - _BaseColor: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 1}
-    - _Diffuse: {r: 0, g: 0, b: 0, a: 1}
-    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
-    - _HairCapColor: {r: 0.30188674, g: 0.14624327, b: 0.03275188, a: 0}
-    - _SpecularColor: {r: 0.56078434, g: 0.61960787, b: 0.7019608, a: 1}
+    - _BaseColor: {r: 0.24528301, g: 0.052064795, b: 0.052064795, a: 1}
+    - _Color: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &9113228627327482608
+--- !u!114 &2893227942002529173
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
